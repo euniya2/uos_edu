@@ -108,6 +108,23 @@ button{font-family:inherit;cursor:pointer}
 }
 .filebtn:hover{border-color:var(--accent);background:var(--accent-soft)}
 .filebtn.has{border-style:solid;border-color:var(--ok);color:var(--ok)}
+input[type=range]{
+  width:100%;height:10px;border-radius:6px;margin:2px 0 10px;
+  background:var(--surface-2);appearance:none;-webkit-appearance:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:24px;height:24px;border-radius:50%;background:var(--accent);border:3px solid #fff;cursor:pointer;
+}
+input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.hint{margin:0 0 10px;color:var(--ink-soft);font-size:.88em}
+.btn.small{min-height:44px;font-size:.92em;width:auto;padding:0 18px}
+#photoctl[hidden]{display:none}
+#card.grab{cursor:grab}
+#card.grabbing{cursor:grabbing}
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 
 .actions{display:grid;gap:10px;margin-top:26px;grid-template-columns:1fr 1fr}
@@ -160,6 +177,13 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <label for="photo">캐릭터 그림</label>
     <button class="filebtn" id="photobtn" type="button">그림 고르기</button>
     <input type="file" id="photo" accept="image/*">
+  </div>
+
+  <div class="field" id="photoctl" hidden>
+    <label for="zoom">그림 크기와 위치</label>
+    <input type="range" id="zoom" min="100" max="260" value="100" aria-label="그림 크기">
+    <p class="hint">그림을 <strong>마우스로 끌어서</strong> 옮길 수 있습니다. 얼굴이 잘리면 크기를 키우고 옮겨보세요.</p>
+    <button class="btn ghost small" id="recenter" type="button">가운데로 되돌리기</button>
   </div>
 
   <div class="field">
@@ -531,6 +555,9 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
   var theme = 0;
   var shape = 'circle';
   var photo = null;
+  var zoom = 1, offX = 0, offY = 0;
+  var PAD = 64, PHOTO_D = 236;
+  var PCX = PAD + PHOTO_D / 2, PCY = H / 2 - 10;
 
   // 색 고르기 버튼
   var colors = document.getElementById('colors');
@@ -548,6 +575,63 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
       draw();
     });
     colors.appendChild(b);
+  });
+
+  function photoBox(){
+    if (!photo) return { w: 0, h: 0 };
+    var s = Math.max(PHOTO_D / photo.width, PHOTO_D / photo.height) * zoom;
+    return { w: photo.width * s, h: photo.height * s };
+  }
+
+  function clampOffset(){
+    var box = photoBox();
+    var mx = Math.max(0, (box.w - PHOTO_D) / 2);
+    var my = Math.max(0, (box.h - PHOTO_D) / 2);
+    offX = Math.max(-mx, Math.min(mx, offX));
+    offY = Math.max(-my, Math.min(my, offY));
+  }
+
+  // 끌어서 옮기기 (마우스 · 손가락)
+  var dragging = false, sx = 0, sy = 0, ox0 = 0, oy0 = 0;
+  function ratio(){ return cv.width / cv.getBoundingClientRect().width; }
+  function pointOf(e){
+    var t = e.touches && e.touches[0] ? e.touches[0] : e;
+    return { x: t.clientX, y: t.clientY };
+  }
+  function dragStart(e){
+    if (!photo) return;
+    dragging = true;
+    var pt = pointOf(e);
+    sx = pt.x; sy = pt.y; ox0 = offX; oy0 = offY;
+    cv.classList.add('grabbing');
+  }
+  function dragMove(e){
+    if (!dragging) return;
+    var pt = pointOf(e), r = ratio();
+    offX = ox0 + (pt.x - sx) * r;
+    offY = oy0 + (pt.y - sy) * r;
+    clampOffset();
+    draw();
+    if (e.cancelable) e.preventDefault();
+  }
+  function dragEnd(){ dragging = false; cv.classList.remove('grabbing'); }
+
+  cv.addEventListener('mousedown', dragStart);
+  window.addEventListener('mousemove', dragMove);
+  window.addEventListener('mouseup', dragEnd);
+  cv.addEventListener('touchstart', dragStart, { passive: true });
+  cv.addEventListener('touchmove', dragMove, { passive: false });
+  cv.addEventListener('touchend', dragEnd);
+
+  document.getElementById('zoom').addEventListener('input', function(){
+    zoom = parseInt(this.value, 10) / 100;
+    clampOffset();
+    draw();
+  });
+  document.getElementById('recenter').addEventListener('click', function(){
+    zoom = 1; offX = 0; offY = 0;
+    document.getElementById('zoom').value = 100;
+    draw();
   });
 
   var shapeBtns = {
@@ -589,7 +673,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     ctx.fillStyle = p.bg;
     ctx.fillRect(0, 0, W, H);
 
-    var pad = 64;
+    var pad = PAD;
 
     // QR (있을 때만, 작게)
     var qrSize = 0;
@@ -614,13 +698,13 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
         ctx.fillStyle = p.soft;
         ctx.font = '600 20px "Nanum Gothic", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('찍으면 제 노래가 나옵니다', qx + qrSize / 2, qy + qrSize + 34);
+        ctx.fillText("'Suno' 나의 브랜드송", qx + qrSize / 2, qy + qrSize + 34);
         ctx.textAlign = 'left';
       }
     }
 
     // 캐릭터 원
-    var d = 236, cx = pad + d / 2, cy = H / 2 - 10;
+    var d = PHOTO_D, cx = PCX, cy = PCY;
     ctx.save();
     if (shape === 'circle'){
       ctx.beginPath();
@@ -632,9 +716,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     ctx.fill();
     ctx.clip();
     if (photo){
-      var s = Math.max(d / photo.width, d / photo.height);
-      var pw = photo.width * s, ph = photo.height * s;
-      ctx.drawImage(photo, cx - pw / 2, cy - ph / 2, pw, ph);
+      var box = photoBox();
+      ctx.drawImage(photo, cx - box.w / 2 + offX, cy - box.h / 2 + offY, box.w, box.h);
     } else {
       ctx.fillStyle = p.soft;
       ctx.font = '800 96px "Nanum Gothic", sans-serif';
@@ -716,6 +799,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
       var img = new Image();
       img.onload = function(){
         photo = img;
+        zoom = 1; offX = 0; offY = 0;
+        document.getElementById('zoom').value = 100;
+        document.getElementById('photoctl').hidden = false;
+        cv.classList.add('grab');
         photoBtn.textContent = '그림을 바꾸려면 여기를 누르세요';
         photoBtn.classList.add('has');
         draw();
