@@ -69,6 +69,7 @@ button{font-family:inherit;cursor:pointer}
 .btn:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
 .btn.ghost{background:var(--ground);color:var(--ink);border:1px solid var(--line);min-height:52px;font-size:1em}
 .btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+.btn.done{background:var(--ok);color:#fff}
 
 .msg{margin-top:14px;padding:13px 16px;border-radius:10px;
   background:var(--mark-bg);color:var(--mark-ink);font-weight:700;font-size:.95em;
@@ -110,21 +111,16 @@ button{font-family:inherit;cursor:pointer}
     <input type="text" id="url" placeholder="https://suno.com/song/..." autocomplete="off" spellcheck="false">
   </div>
 
-  <div class="field">
-    <label for="name">이름 <span class="opt">(안 적으셔도 됩니다)</span></label>
-    <input type="text" id="name" placeholder="홍길동" autocomplete="off">
-  </div>
-
   <button class="btn" id="make" type="button">QR 만들기</button>
   <p class="msg" id="msg" hidden></p>
 
   <div class="result" id="result" hidden>
     <div class="card">
       <canvas id="qr" width="340" height="340"></canvas>
-      <p class="who" id="who" hidden></p>
       <p class="addr" id="addr"></p>
     </div>
     <div class="after">
+      <button class="btn" id="copyaddr" type="button">노래 주소 복사하기</button>
       <button class="btn ghost" id="again" type="button">다른 주소로 다시 만들기</button>
     </div>
     <p class="tip">휴대폰 카메라를 켜고 QR을 비추기만 하면 됩니다. 따로 앱을 깔지 않으셔도 됩니다.</p>
@@ -424,12 +420,38 @@ button{font-family:inherit;cursor:pointer}
 
   /* ---------- 화면 동작 ---------- */
   var urlEl = document.getElementById('url');
-  var nameEl = document.getElementById('name');
   var msgEl = document.getElementById('msg');
   var resEl = document.getElementById('result');
-  var whoEl = document.getElementById('who');
   var addrEl = document.getElementById('addr');
   var canvas = document.getElementById('qr');
+  var lastUrl = '';
+
+  function legacyCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text){
+    if (!text) return Promise.resolve(false);
+    // 클릭 직후 동기적으로 먼저 시도해야 브라우저가 막지 않는다
+    if (legacyCopy(text)) return Promise.resolve(true);
+    if (navigator.clipboard){
+      return navigator.clipboard.writeText(text).then(function(){ return true; },
+                                                      function(){ return false; });
+    }
+    return Promise.resolve(false);
+  }
 
   function say(text){
     if (!text){ msgEl.hidden = true; return; }
@@ -459,17 +481,26 @@ button{font-family:inherit;cursor:pointer}
     if (!qr){ say('주소가 너무 깁니다. 다시 복사해 주세요.'); resEl.hidden = true; return; }
     say('');
     draw(qr);
-    var who = nameEl.value.trim();
-    whoEl.textContent = who;
-    whoEl.hidden = !who;
     addrEl.textContent = url;
+    lastUrl = url;
     resEl.hidden = false;
     resEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   document.getElementById('make').addEventListener('click', make);
   urlEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') make(); });
-  nameEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') make(); });
+  document.getElementById('copyaddr').addEventListener('click', function(){
+    var btn = this;
+    copyText(lastUrl).then(function(ok){
+      var keep = btn.dataset.label || btn.textContent;
+      btn.dataset.label = keep;
+      btn.classList.add('done');
+      btn.textContent = ok ? '복사됐습니다 — 패들렛에 붙여넣으세요' : '복사가 안 됩니다';
+      clearTimeout(btn._t);
+      btn._t = setTimeout(function(){ btn.classList.remove('done'); btn.textContent = keep; }, 2200);
+    });
+  });
+
   document.getElementById('again').addEventListener('click', function(){
     urlEl.value = ''; resEl.hidden = true; say(''); urlEl.focus();
   });
