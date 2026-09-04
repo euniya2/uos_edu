@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나만의 노래, 나만의 비서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+
+<style>
+:root{
+  --ground:#ffffff;
+  --surface:#f6f8fb;
+  --surface-2:#eceff4;
+  --line:#dde1e8;
+  --ink:#141c28;
+  --ink-soft:#5c6675;
+  --accent:#1b3252;        /* 네이비 — 버튼·번호 */
+  --accent-deep:#0e1f38;
+  --accent-soft:#e5eaf2;
+  --mark-ink:#8a5206;      /* 앰버 — 바꿔야 할 곳에만 */
+  --mark-bg:#fdf1dd;
+  --mark-line:#e8c691;
+  --ok:#1a6b48;
+  --radius:14px;
+  --step:1;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161d;
+    --surface:#1a2029;
+    --surface-2:#222a35;
+    --line:#333d4b;
+    --ink:#e8ecf2;
+    --ink-soft:#a3aec0;
+    --accent:#3d6aa3;
+    --accent-deep:#5c8bc4;
+    --accent-soft:#232f42;
+    --mark-ink:#f2c684;
+    --mark-bg:#3a2c14;
+    --mark-line:#6b5124;
+    --ok:#5cbd91;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161d;
+  --surface:#1a2029;
+  --surface-2:#222a35;
+  --line:#333d4b;
+  --ink:#e8ecf2;
+  --ink-soft:#a3aec0;
+  --accent:#3d6aa3;
+  --accent-deep:#5c8bc4;
+  --accent-soft:#232f42;
+  --mark-ink:#f2c684;
+  --mark-bg:#3a2c14;
+  --mark-line:#6b5124;
+  --ok:#5cbd91;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Pretendard Variable","Pretendard","Nanum Gothic","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:calc(17px * var(--step));
+  line-height:1.75;
+  -webkit-text-size-adjust:100%;
+}
+
+.wrap{max-width:840px;margin:0 auto;padding:0 20px 80px}
+
+/* ── 머리말 ───────────────────────── */
+.masthead{padding:44px 0 26px;border-bottom:2px solid var(--line)}
+.eyebrow{
+  font-size:.82em;font-weight:700;letter-spacing:.14em;
+  color:var(--accent);margin:0 0 10px;
+}
+h1{
+  font-size:2.1em;font-weight:800;line-height:1.25;margin:0 0 12px;
+  text-wrap:balance;letter-spacing:-.01em;
+}
+.lede{margin:0;color:var(--ink-soft);font-size:1.02em}
+.lede strong{color:var(--ink)}
+
+/* ── 도구 막대 ─────────────────────── */
+.toolbar{
+  position:sticky;top:0;z-index:20;
+  background:var(--ground);
+  border-bottom:1px solid var(--line);
+  padding:10px 0;margin-bottom:8px;
+}
+.toolbar-inner{
+  max-width:840px;margin:0 auto;padding:0 20px;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.jump{
+  display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto;
+  overflow-x:auto;
+}
+.jump a{
+  flex:0 0 auto;
+  padding:7px 13px;border-radius:999px;
+  background:var(--surface);color:var(--ink-soft);
+  text-decoration:none;font-size:.86em;font-weight:700;
+  border:1px solid transparent;white-space:nowrap;
+}
+.jump a:hover,.jump a:focus-visible{background:var(--accent-soft);color:var(--accent-deep);border-color:var(--accent)}
+.sizer{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.sizer span{font-size:.82em;color:var(--ink-soft);font-weight:700}
+.sizer button{
+  width:38px;height:38px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);font-family:inherit;font-weight:800;cursor:pointer;
+  font-size:1em;line-height:1;
+}
+.sizer button:hover{background:var(--accent-soft);border-color:var(--accent)}
+
+/* ── 섹션 ─────────────────────────── */
+section{margin-top:52px;scroll-margin-top:76px}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-num{
+  font-family:"Nanum Gothic Coding",monospace;
+  font-size:1.5em;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+h2{font-size:1.5em;font-weight:800;margin:0;letter-spacing:-.01em}
+.sec-note{margin:0 0 22px;color:var(--ink-soft)}
+
+/* ── 카드 ─────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px 22px 20px;
+  margin-bottom:18px;
+}
+.card h3{
+  font-size:1.14em;font-weight:800;margin:0 0 8px;
+}
+.card p{margin:0 0 14px;color:var(--ink-soft)}
+.card p:last-of-type{margin-bottom:16px}
+.card strong{color:var(--ink)}
+
+pre{
+  margin:0 0 14px;
+  background:var(--ground);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:18px 18px;
+  font-family:"Nanum Gothic Coding","D2Coding",monospace;
+  font-size:.98em;line-height:1.85;
+  white-space:pre-wrap;word-break:break-word;
+  overflow-x:auto;
+}
+.ph{
+  color:var(--mark-ink);font-weight:700;
+  background:var(--mark-bg);
+  box-shadow:inset 0 0 0 1px var(--mark-line);
+  border-radius:4px;padding:1px 4px;
+}
+
+button.copy{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;min-height:58px;
+  border:none;border-radius:10px;
+  background:var(--accent);color:#fff;
+  font-family:inherit;font-size:1.05em;font-weight:800;
+  cursor:pointer;
+}
+button.copy:hover{background:var(--accent-deep)}
+button.copy:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
+button.copy.done{background:var(--ok)}
+button.copy .ico{font-family:"Nanum Gothic Coding",monospace;font-weight:700}
+
+/* 짧은 프롬프트 여러 개 */
+.chips{display:grid;gap:10px}
+@media(min-width:620px){.chips{grid-template-columns:1fr 1fr}}
+button.chip{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:56px;padding:12px 16px;
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--ground);color:var(--ink);
+  font-family:"Nanum Gothic Coding",monospace;
+  font-size:.96em;font-weight:700;text-align:left;cursor:pointer;
+}
+button.chip:hover{border-color:var(--accent);background:var(--accent-soft)}
+button.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.chip.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+button.chip .tag{font-family:inherit;font-size:.82em;font-weight:700;opacity:.65;flex:0 0 auto}
+
+/* 참고 상자 — 앰버는 '고칠 곳' 전용이라 여기선 중성 톤 */
+.note{
+  display:flex;gap:11px;
+  background:var(--surface-2);
+  border-radius:10px;padding:13px 15px;
+  font-size:.94em;color:var(--ink-soft);
+}
+.note b{flex:0 0 auto;font-weight:800;color:var(--accent-deep)}
+.note p{margin:0;color:inherit}
+
+/* 순서 목록 */
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.steps li{
+  counter-increment:s;
+  display:flex;gap:14px;align-items:flex-start;
+  padding:11px 0;border-bottom:1px solid var(--line);
+}
+ol.steps li:last-child{border-bottom:none}
+ol.steps li::before{
+  content:counter(s);
+  flex:0 0 auto;
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  font-family:"Nanum Gothic Coding",monospace;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9em;margin-top:2px;
+}
+ol.steps b{font-weight:800}
+ol.steps .en{font-family:"Nanum Gothic Coding",monospace;font-weight:700;color:var(--accent-deep)}
+
+/* 링크 배너 */
+.banner{
+  display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;
+  background:var(--surface-2);border-radius:var(--radius);
+  padding:16px 20px;margin-top:24px;
+}
+.banner .label{font-weight:800;font-size:.9em;color:var(--accent-deep)}
+.banner .addr{font-family:"Nanum Gothic Coding",monospace;font-weight:700;font-size:1.08em}
+
+footer{
+  margin-top:60px;padding-top:22px;border-top:1px solid var(--line);
+  color:var(--ink-soft);font-size:.9em;
+}
+@media (prefers-reduced-motion: no-preference){
+  button.copy,button.chip{transition:background .15s ease,border-color .15s ease}
+}
+
+/* ── 항목별 작은 복사 블록 ─────────── */
+.mini{margin-bottom:16px}
+.mini:last-of-type{margin-bottom:0}
+.mlabel{
+  display:block;font-weight:800;font-size:.9em;
+  color:var(--accent-deep);margin:0 0 6px;
+}
+button.copy.small{min-height:48px;font-size:.98em}
+
+/* ── 펼쳐보기 (힌트) ───────────────── */
+details.reveal{margin-top:9px}
+details.reveal summary{
+  cursor:pointer;font-weight:800;color:var(--accent-deep);
+  list-style:none;display:inline-flex;align-items:center;gap:6px;
+}
+details.reveal summary::-webkit-details-marker{display:none}
+details.reveal summary::after{content:'＋';font-weight:800}
+details.reveal[open] summary::after{content:'－'}
+details.reveal p{margin:9px 0 0}
+details.reveal summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* ── 펼쳐보기 (상세 프롬프트) ───────── */
+details.more{
+  margin-top:16px;background:var(--ground);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+}
+details.more summary{
+  padding:15px 18px;font-weight:800;cursor:pointer;
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:'＋';font-weight:800;color:var(--accent)}
+details.more[open] summary{border-bottom:1px solid var(--line)}
+details.more[open] summary::after{content:'－'}
+details.more summary:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.more-body{padding:16px 18px 18px}
+.more-body p{margin:0 0 12px;color:var(--ink-soft)}
+
+/* ── 링크 버튼 ─────────────────────── */
+.linkbtn{
+  display:flex;align-items:center;justify-content:center;
+  min-height:58px;border-radius:10px;margin:0 0 16px;
+  background:var(--accent);color:#fff;
+  font-weight:800;font-size:1.05em;text-decoration:none;
+}
+.linkbtn:hover{background:var(--accent-deep)}
+.linkbtn:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
+
+/* ── 되묻는 한 줄 ─────────────────── */
+.note p.ask{
+  margin-top:10px;
+  font-size:1.1em;font-weight:800;
+  color:var(--accent-deep);
+  line-height:1.5;
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <nav class="jump" aria-label="바로가기">
+      <a href="#s1">1 브랜드송</a>
+      <a href="#s2">2 듣기 · 공유</a>
+      <a href="#s3">3 AI 비서 만들기</a>
+      <a href="#s4">4 나만의 비서</a>
+      <a href="#s5">5 디지털 명함</a>
+    </nav>
+    <div class="sizer">
+      <span>글자</span>
+      <button type="button" id="smaller" aria-label="글자 작게">－</button>
+      <button type="button" id="bigger" aria-label="글자 크게">＋</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">2026 인공지능 업스킬링 · 2회차</p>
+    <h1>나만의 노래, 나만의 비서</h1>
+    <p class="lede">오늘 쓸 문장이 순서대로 담겨 있습니다. <strong>복사 버튼을 누르면 복사</strong>되니, 붙여넣기(<strong>Ctrl</strong> 누른 채 <strong>V</strong>)만 하시면 됩니다. 노란색으로 표시된 <span class="ph">[대괄호]</span> 부분만 내 이야기로 바꾸세요.</p>
+  </header>
+
+  <!-- ───────── 1 ───────── -->
+  <section id="s1">
+    <div class="sec-head"><span class="sec-num">1</span><h2>나의 브랜드송 만들기</h2></div>
+    <p class="sec-note">나를 소개하는 짧은 노래를 브랜드송이라고 합니다. 지난주에 적으신 여섯 칸이 그대로 가사가 됩니다.</p>
+
+    <div class="card">
+      <h3>먼저 수노에 들어갑니다</h3>
+      <p>새 아이디와 비밀번호는 <strong>만들지 않으셔도 됩니다.</strong> 이미 쓰고 계신 구글 계정으로 들어갑니다.</p>
+      <ol class="steps">
+        <li><span>오른쪽 위 <span class="en">Join Suno for free</span> 를 누릅니다</span></li>
+        <li><span><span class="en">Continue with Google</span> <b>만</b> 누르세요</span></li>
+        <li><span>내 지메일 계정을 고릅니다</span></li>
+        <li><span><b>계속</b> 을 누릅니다</span></li>
+        <li><span>생년월일을 넣습니다 — <b>연도 칸을 눌러 숫자를 쳐도 됩니다</b></span></li>
+        <li><span><span class="en">Continue</span> 를 누릅니다</span></li>
+        <li><span>프로필 만들기는 <b>건너뛰어도</b> 됩니다 (<span class="en">skip</span>)</span></li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>① 곡 설명 쓰기</h3>
+      <pre data-copy>[텃밭을 가꾸는] 나를 소개하는 브랜드송을 만들어줘.
+
+[밝고 경쾌한] 느낌으로,
+한국어 가사로 부탁해.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>참고</b><p>한국어 가사는 아직 어색하게 나올 수 있습니다. <strong>그게 정상입니다.</strong> 마음에 안 드시면 <strong>한 번 더 만드시면 됩니다.</strong> 하루에 쓸 수 있는 양은 넉넉하고, 매일 새로 채워집니다.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>② 느낌을 바꿔보기</h3>
+      <p>위 문장에서 <span class="ph">[밝고 경쾌한]</span> 자리만 바꿔보세요. 노래 분위기가 완전히 달라집니다.</p>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="잔잔하고 따뜻한">잔잔하고 따뜻한<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="신나는 트로트">신나는 트로트<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="조용한 발라드">조용한 발라드<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="힘찬 행진곡">힘찬 행진곡<span class="tag">복사</span></button>
+      </div>
+      <div class="note"><b>화면 아래</b><p>수노 화면 아래에 <strong>추천 스타일</strong>이 몇 개 떠 있습니다. 눌러서 더해보셔도 됩니다. <strong>뜨는 목록은 사람마다 다릅니다.</strong></p></div>
+      <div class="note" style="margin-top:10px"><b>주의</b><p><strong>연주곡</strong> 단추는 켜지 마세요. 켜면 가사 없이 반주만 나옵니다.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>③ 가사를 직접 쓰고 싶으시면</h3>
+      <p>수노가 만들어 준 가사가 마음에 안 드실 수 있습니다. 그럴 땐 <strong>제미나이에서 가사를 먼저 만들어</strong> 수노에 넣으시면 됩니다. <strong>꼭 하지 않으셔도 됩니다.</strong></p>
+      <pre data-copy>suno에 넣을 나를 소개하는 노래 가사를 써줘.
+
+나는 [텃밭을 가꾸는] 사람이고,
+[아침 일찍 일어나 물 주는 것]을 좋아합니다.
+
+이렇게 써줘.
+- 한국어로, 짧고 부르기 쉽게
+- 1절 → 후렴 → 2절 → 후렴 순서로
+- 어려운 말은 쓰지 말고
+
+각 부분 앞에 이렇게 표시해줘.
+- verse
+- chorus</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>넣는 곳</b><p>수노에서 <strong>＋ 가사</strong> 를 누르거나 <strong>고급</strong>으로 바꾸면 가사 칸이 나옵니다. 거기에 붙여넣고, 곡 설명 칸에는 <strong>분위기만</strong> 남기세요.</p></div>
+    </div>
+  </section>
+
+  <!-- ───────── 2 ───────── -->
+  <section id="s2">
+    <div class="sec-head"><span class="sec-num">2</span><h2>만든 노래 듣기 및 공유</h2></div>
+    <p class="sec-note">컴퓨터에는 스피커가 없습니다. QR을 만들어 <strong>휴대폰으로</strong> 듣습니다.</p>
+
+    <div class="card">
+      <h3>노래 주소 복사하기</h3>
+      <ol class="steps">
+        <li><span>만든 노래 위에서 점 세 개 <span class="en">( ··· )</span> 를 누릅니다</span></li>
+        <li><span><b>공유</b> 를 누르고 <b>링크 복사</b> 를 누릅니다</span></li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>QR 만들어 듣기</h3>
+      <p>패들렛 맨 위의 <strong>QR 만들기</strong> 를 엽니다.</p>
+      <ol class="steps">
+        <li><span>복사한 주소를 붙여넣습니다 (<b>Ctrl</b> 누른 채 <b>V</b>)</span></li>
+        <li><span><b>QR 만들기</b> 를 누릅니다</span></li>
+        <li><span>휴대폰 <b>카메라</b>로 화면의 QR을 비춥니다 — 노래가 열립니다</span></li>
+        <li><span><b>노래 주소 복사하기</b> 를 눌러 패들렛에 올립니다</span></li>
+      </ol>
+      <div class="note"><b>참고</b><p>앱을 따로 깔지 않으셔도 됩니다. 카메라만 켜서 화면에 대시면 됩니다. <strong>집에 가서도 계속 들으실 수 있습니다.</strong></p></div>
+    </div>
+  </section>
+
+  <!-- ───────── 3 ───────── -->
+  <section id="s3">
+    <div class="sec-head"><span class="sec-num">3</span><h2>나만의 AI 비서 만들기</h2></div>
+    <p class="sec-note">한 번 알려주면 계속 기억하는 나만의 AI를 <strong>Gem</strong> 이라고 합니다.</p>
+
+    <div class="card">
+      <h3>① 지난주 문장을 다시 꺼내봅니다</h3>
+      <p>지난주에 쓰셨던 그 문장입니다. 그대로 한 번 더 물어보세요.</p>
+      <pre data-copy>너는 20년 경력의 국내 여행 가이드야.
+
+[60대 부부]가 [10월]에 [2박 3일]로 여행을 가려고 해.
+[많이 걷지 않아도 되는 곳]이면 좋겠어.
+
+아래 조건에 맞춰 답해줘.
+- 딱 3곳만 추천
+- 표로 정리
+- 각각 추천 이유를 두 줄씩</pre>
+      <div class="note"><b>느껴보기</b>
+        <div>
+          <p>이번엔 겨울에 가고 싶다고 해볼까요? <strong>또 처음부터 다 쓰셔야 합니다.</strong></p>
+          <p class="ask">한 번 알려준 걸 기억하게 할 수는 없을까요?</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>② Gem 만들기</h3>
+      <p>나만의 AI 비서를 만드는 곳으로 들어갑니다.</p>
+      <ol class="steps">
+        <li><span>제미나이 화면 <b>왼쪽 위 메뉴</b>를 엽니다</span></li>
+        <li><span><b>Gem</b> 을 찾아 누릅니다</span></li>
+        <li><span><b>새로 만들기</b> 를 누릅니다</span></li>
+      </ol>
+      <div class="note" style="margin-top:14px"><b>나오는 화면</b><p><strong>이름 · 설명 · 요청사항</strong> 세 칸이 있습니다. 메뉴가 안 보이면 화면 왼쪽 위 <strong>줄 세 개(≡)</strong>를 눌러보세요.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>③ 먼저 이만큼만 적습니다</h3>
+      <p>일부러 짧게 적어봅니다. 어떤 답이 나오는지 먼저 보겠습니다.</p>
+      <div class="mini">
+        <span class="mlabel">이름</span>
+        <pre data-copy>여행플래너</pre>
+        <button class="copy small" type="button"><span class="ico">⧉</span>복사하기</button>
+      </div>
+
+      <div class="mini">
+        <span class="mlabel">설명</span>
+        <pre data-copy>여행 일정 도우미</pre>
+        <button class="copy small" type="button"><span class="ico">⧉</span>복사하기</button>
+      </div>
+
+      <div class="mini">
+        <span class="mlabel">요청사항</span>
+        <pre data-copy>너는 여행 일정을 짜주는 도우미야.
+내가 목적지와 날짜를 말하면 일정을 만들어줘.</pre>
+        <button class="copy small" type="button"><span class="ico">⧉</span>복사하기</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>④ 만든 Gem에게 물어봅시다</h3>
+      <p>오늘은 이런 여행을 짜봅니다 — <strong>오래 걷지 않고 편하게 다니는 여행</strong>입니다.</p>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="경주 2박 3일 일정 짜줘">경주 2박 3일 일정 짜줘<span class="tag">복사</span></button>
+      </div>
+      <div class="note"><b>생각해보기</b>
+        <div>
+          <p>답을 읽어보시고 — <strong>어떤 부분이 빠졌을까요?</strong></p>
+          <details class="reveal"><summary>힌트 보기</summary><p>오래 걷지 않고 편하게 다녀야 하는 여행입니다.</p></details>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>⑤ 요청사항을 고칩니다</h3>
+      <p>빠진 조건을 넣어 <strong>요청사항을 통째로 바꿉니다.</strong> 고친 뒤 <strong>저장(업데이트)</strong>을 꼭 누르세요.</p>
+      <pre data-copy>너는 여행 일정을 짜주는 도우미야.
+
+[어떤 여행인지]
+오래 걷지 않고 편하게 다니는 여행이다.
+
+[반드시 지킬 것]
+- 하루 도보 이동은 3km 이내로 잡는다.
+- 계단이 많거나 경사가 급한 곳은 제외한다.
+- 2시간마다 앉아서 쉴 수 있는 곳과 화장실 위치를 함께 알려준다.
+- 식사는 좌식이 아닌, 의자에 앉는 식당으로 추천한다.
+- 이동은 자가용 기준으로 하고, 구간별 소요 시간을 적는다.
+
+[출력 형식]
+표로 만든다. 열은 다음과 같이 한다.
+시간 | 장소 | 소요시간 | 메모
+
+[중요]
+모르는 정보는 지어내지 말고 "확인 필요"라고 표시한다.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>다시 물어보기</b><p>같은 질문을 한 번 더 해보세요. <strong>답이 완전히 달라집니다.</strong><br>마음에 드는 일정은 Docs로 내보내 저장하세요.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>⑥ 한 걸음 더 — AI가 먼저 묻게 하기</h3>
+      <p>요청사항 <strong>맨 아래에 이 한 줄만</strong> 더합니다.</p>
+      <pre data-copy>일정을 만들기 전에, 부족한 정보가 있으면
+먼저 나에게 한 번에 세 가지만 물어봐.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>달라지는 것</b><p>이제 <strong>AI가 나에게 묻습니다.</strong> 조건을 다 말하지 않으셔도 되고, 대답만 하시면 필요한 것이 다 들어갑니다.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Gem 여행플래너 체험</h3>
+      <p>강사가 만들어 둔 여행플래너입니다. 아래를 눌러 들어가서 직접 물어보세요.</p>
+      <a class="linkbtn" href="https://gemini.google.com/gem/1gn8nComwq_lUW0sloATD3vdascXgL10T?usp=sharing" target="_blank" rel="noopener">여행플래너 Gem 열기</a>
+      <p>이렇게 물어보세요.</p>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="제주도 3박 4일 일정">제주도 3박 4일 일정<span class="tag">복사</span></button>
+      </div>
+      <div class="note"><b>보실 것</b><p>바로 일정을 만들지 않고 <strong>AI가 먼저 세 가지를 물어봅니다.</strong> 대답만 하시면 됩니다.</p></div>
+
+      <details class="more">
+        <summary>상세 프롬프트 보기</summary>
+        <div class="more-body">
+          <p>이 Gem에 들어간 요청사항입니다. 집에서 <strong>새 Gem을 만들어</strong> 그대로 넣어보세요.</p>
+          <pre data-copy>너는 맞춤형 여행 플래너야.
+
+[1단계 — 먼저 물어보기]
+내가 여행지와 인원, 일정을 말하면
+일정을 바로 만들지 말고 아래를 먼저 확인해줘.
+(이미 말한 것은 빼고 물어봐)
+
+1. 함께 가는 사람과 나이대 — 아이, 부모님이 있는지
+2. 이동 수단 — 대중교통인지 자가용인지
+3. 숙소 취향 — 호텔·펜션 등과 원하는 가격대
+
+[2단계 — 맞춰서 짜기]
+- 아이와 함께면: 유모차가 다닐 수 있는 곳, 쉬는 시간 넉넉히
+- 부모님과 함께면: 많이 걷지 않게, 계단 적은 곳, 의자에 앉는 식당
+- 어른끼리면: 이름난 곳, 전시·미술관, 맛집 위주
+- 숙소는 그날 마지막 장소와 다음 날 일정에 가까운 곳으로
+- 대중교통이면 노선과 걸리는 시간, 자가용이면 주차 사정을 적어줘
+
+[3단계 — 이렇게 보여줘]
+하루마다 세 가지를 순서대로 적어줘.
+1) 일정표 — 시간 | 장소 | 특징과 팁 | 이동 방법과 시간
+2) 추천 숙소 — 이름, 위치, 추천 이유, 1박 가격대
+3) 예상 경비 — 입장료, 식비, 교통비, 숙박비, 합계
+
+[중요]
+확실하지 않은 정보는 지어내지 말고 "확인 필요"라고 표시해줘.
+경비는 대략적인 참고용이며 실제와 다를 수 있다고 표 아래에 꼭 적어줘.</pre>
+          <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+          <div class="note"><b>주의</b><p>AI가 알려주는 <strong>가격과 영업 정보는 틀릴 수 있습니다.</strong> 실제로 가시기 전에 꼭 확인해 보세요.</p></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ───────── 4 ───────── -->
+  <section id="s4">
+    <div class="sec-head"><span class="sec-num">4</span><h2>이번엔 나만의 Gem</h2></div>
+    <p class="sec-note">뼈대는 여행 비서와 똑같습니다. <strong>역할과 대상만</strong> 바뀝니다.</p>
+
+    <div class="card">
+      <h3>예시) 우리 동네 안내원 — 동네 정보를 쉽게 알려주는 도우미</h3>
+      <p>이대로 복사해 넣고, 노란 부분을 내 것으로 바꾸세요.</p>
+      <pre data-copy>너는 [동대문구]에 오래 산 친절한 이웃이야.
+
+[대상]
+나는 [60대]이고, [혼자 사는] 사람이다.
+
+[반드시 지킬 것]
+- 어려운 말은 쓰지 않는다.
+- 한 번에 세 가지 안쪽으로 짧게 알려준다.
+- 가는 방법과 걸리는 시간을 함께 적는다.
+
+[출력 형식]
+번호를 붙여 정리한다.
+
+[중요]
+모르는 정보는 지어내지 말고 "확인 필요"라고 표시한다.
+답하기 전에 부족한 정보가 있으면 먼저 나에게 세 가지만 물어봐.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+    </div>
+
+    <div class="card">
+      <h3>다른 주제로 만들고 싶으시면</h3>
+      <p>맨 윗줄 <strong>역할</strong>만 바꾸면 됩니다. 나머지는 그대로 두셔도 됩니다.</p>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="너는 손주에게 보낼 편지와 문자를 대신 써주는 따뜻한 사람이야.">편지 · 문자 대필가<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="너는 어른의 건강 식단을 상담해주는 영양사야.">건강 식단 상담<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="너는 오늘 있었던 일을 일기로 정리해주는 기록 담당이야.">나의 기록 담당<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="너는 중고 물건을 잘 팔 수 있게 글을 써주는 도우미야.">물건 팔기 도우미<span class="tag">복사</span></button>
+      </div>
+      <div class="note"><b>마무리</b><p>다 만드시면 <strong>공유 링크를 패들렛에</strong> 올려주세요. 서로의 비서를 써볼 수 있습니다.</p></div>
+    </div>
+  </section>
+
+  <!-- ───────── 5 ───────── -->
+  <section id="s5">
+    <div class="sec-head"><span class="sec-num">5</span><h2>나만의 디지털 명함</h2></div>
+    <p class="sec-note">지난주 캐릭터와 오늘 만든 노래를 한 장에 담습니다. AI로 만들지 않고 <strong>명함 페이지</strong>가 만들어 줍니다.</p>
+
+    <div class="card">
+      <h3>만드는 순서</h3>
+      <ol class="steps">
+        <li><span>패들렛에서 <b>내 캐릭터 그림을 내려받습니다</b> (그림 위 오른쪽 클릭 → 저장)</span></li>
+        <li><span>칠판의 주소로 <b>명함 만들기</b> 페이지를 엽니다</span></li>
+        <li><span>그림을 올리고 이름을 적습니다 — 얼굴이 잘리면 <b>끌어서 옮기고 크기를 키우세요</b></span></li>
+        <li><span><b>노래 주소</b>를 넣으면 QR이 들어갑니다</span></li>
+        <li><span><b>이미지 복사하기</b> 를 눌러 패들렛에 붙여넣습니다</span></li>
+      </ol>
+      <div class="note"><b>참고</b><p>연락처 · 이메일 · 남기고 싶은 말은 <strong>넣고 싶은 것만</strong> 적으시면 됩니다. 비워두셔도 됩니다.</p></div>
+    </div>
+  </section>
+
+  <div class="banner">
+    <span class="label">결과물 올리는 곳</span>
+    <span class="addr">bit.ly/업스킬링</span>
+  </div>
+
+  <footer>
+    <p><b>마치기 전에 꼭</b> — 오늘은 <b>두 곳</b>에서 로그아웃하셔야 합니다. <b>수노</b> 오른쪽 위 내 사진 → 로그아웃, <b>구글</b> 오른쪽 위 내 사진 → 로그아웃. 공용 컴퓨터라 안 하시면 다음 사람이 내 계정을 볼 수 있습니다.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  // 대괄호 강조 — 원문은 그대로 두고 화면에만 표시
+  document.querySelectorAll('pre[data-copy]').forEach(function(pre){
+    var raw = pre.textContent;
+    pre.setAttribute('data-copy', raw);
+    var html = raw
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\[[^\]]*\]/g, function(m){ return '<span class="ph">' + m + '</span>'; });
+    pre.innerHTML = html;
+  });
+
+  function copyText(text){
+    // 클릭 직후 동기적으로 먼저 시도해야 브라우저가 막지 않는다
+    if (legacy(text)) return Promise.resolve(true);
+    if (navigator.clipboard){
+      return navigator.clipboard.writeText(text).then(function(){ return true; },
+                                                      function(){ return false; });
+    }
+    return Promise.resolve(false);
+  }
+  function legacy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly','');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function flash(btn, label){
+    var original = btn.dataset.label || btn.innerHTML;
+    btn.dataset.label = original;
+    btn.classList.add('done');
+    btn.innerHTML = label;
+    clearTimeout(btn._t);
+    btn._t = setTimeout(function(){
+      btn.classList.remove('done');
+      btn.innerHTML = btn.dataset.label;
+    }, 1800);
+  }
+
+  document.querySelectorAll('button.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pre = btn.parentElement.querySelector('pre[data-copy]');
+      if (!pre) return;
+      copyText(pre.getAttribute('data-copy')).then(function(ok){
+        flash(btn, ok ? '복사됐습니다' : '복사가 안 됩니다 — 손을 들어주세요');
+      });
+    });
+  });
+
+  document.querySelectorAll('button.chip').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      copyText(btn.getAttribute('data-copy')).then(function(ok){
+        flash(btn, ok ? '복사됐습니다' : '복사가 안 됩니다');
+      });
+    });
+  });
+
+  // 글자 크기
+  var STEPS = [1, 1.15, 1.32, 1.5];
+  var idx = 0;
+  try {
+    var saved = localStorage.getItem('uskill-size');
+    if (saved !== null) idx = Math.min(STEPS.length - 1, Math.max(0, parseInt(saved, 10) || 0));
+  } catch(e){}
+  function apply(){
+    document.documentElement.style.setProperty('--step', STEPS[idx]);
+    try { localStorage.setItem('uskill-size', String(idx)); } catch(e){}
+  }
+  apply();
+  document.getElementById('bigger').addEventListener('click', function(){
+    if (idx < STEPS.length - 1){ idx++; apply(); }
+  });
+  document.getElementById('smaller').addEventListener('click', function(){
+    if (idx > 0){ idx--; apply(); }
+  });
+})();
+</script>
+</body>
+</html>
