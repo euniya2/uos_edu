@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나만의 디지털 명함</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+
+<style>
+:root{
+  --ground:#ffffff; --surface:#f6f8fb; --surface-2:#eceff4; --line:#dde1e8;
+  --ink:#141c28; --ink-soft:#5c6675;
+  --accent:#1b3252; --accent-deep:#0e1f38; --accent-soft:#e5eaf2;
+  --mark-ink:#8a5206; --mark-bg:#fdf1dd; --mark-line:#e8c691;
+  --ok:#1a6b48; --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161d; --surface:#1a2029; --surface-2:#222a35; --line:#333d4b;
+    --ink:#e8ecf2; --ink-soft:#a3aec0;
+    --accent:#3d6aa3; --accent-deep:#5c8bc4; --accent-soft:#232f42;
+    --mark-ink:#f2c684; --mark-bg:#3a2c14; --mark-line:#6b5124; --ok:#5cbd91;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161d; --surface:#1a2029; --surface-2:#222a35; --line:#333d4b;
+  --ink:#e8ecf2; --ink-soft:#a3aec0;
+  --accent:#3d6aa3; --accent-deep:#5c8bc4; --accent-soft:#232f42;
+  --mark-ink:#f2c684; --mark-bg:#3a2c14; --mark-line:#6b5124; --ok:#5cbd91;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Pretendard Variable","Pretendard","Nanum Gothic","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:17px;line-height:1.75;-webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:36px 20px 70px}
+.eyebrow{font-size:.82em;font-weight:700;letter-spacing:.14em;color:var(--accent);margin:0 0 8px}
+h1{font-size:2em;font-weight:800;line-height:1.25;margin:0 0 10px;letter-spacing:-.01em}
+.lede{margin:0 0 30px;color:var(--ink-soft);max-width:70ch}
+
+/* 좌우 배치 — 왼쪽 미리보기 고정, 오른쪽 입력 */
+.layout{display:grid;gap:34px}
+@media(min-width:900px){
+  .layout{grid-template-columns:minmax(0,460px) minmax(0,1fr);align-items:start}
+  .col-preview{position:sticky;top:20px}
+}
+
+ol.how{margin:0 0 30px;padding:8px 20px;list-style:none;counter-reset:s;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+ol.how li{counter-increment:s;display:flex;gap:13px;align-items:flex-start;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+ol.how li:last-child{border-bottom:none}
+ol.how li::before{content:counter(s);flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);color:#fff;font-family:"Nanum Gothic Coding",monospace;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-size:.85em;margin-top:3px}
+
+/* 미리보기 */
+.stage{margin:0;text-align:center}
+#card{
+  width:100%;max-width:460px;height:auto;display:block;margin:0 auto;
+  border:1px solid var(--line);border-radius:10px;background:#fff;
+}
+.stage p{margin:12px 0 0;color:var(--ink-soft);font-size:.92em}
+
+/* 입력 */
+h2{font-size:1.2em;font-weight:800;margin:26px 0 14px}
+.col-form h2:first-of-type{margin-top:0}
+label{display:block;font-weight:800;font-size:.95em;margin:0 0 8px}
+label .opt{font-weight:400;color:var(--ink-soft);font-size:.9em}
+input[type=text]{
+  width:100%;padding:15px 15px;border-radius:10px;
+  border:1px solid var(--line);background:var(--ground);color:var(--ink);
+  font-family:inherit;font-size:1em;
+}
+input[type=text].mono{font-family:"Nanum Gothic Coding","D2Coding",monospace;font-size:.95em}
+input[type=text]:focus{outline:3px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+.field{margin-bottom:16px}
+.row2{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+@media(max-width:520px){.row2{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
+
+button{font-family:inherit;cursor:pointer}
+.pick{display:flex;gap:9px;flex-wrap:wrap}
+.swatch{
+  width:56px;height:44px;border-radius:9px;border:2px solid var(--line);cursor:pointer;padding:0;
+}
+.swatch.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.swatch:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.shape{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 16px;border-radius:10px;
+  border:2px solid var(--line);background:var(--ground);color:var(--ink-soft);
+  font-weight:700;font-size:.95em;
+}
+.shape .ico{width:22px;height:22px;border:2.5px solid currentColor;flex:0 0 auto}
+.shape .ico.circle{border-radius:50%}
+.shape .ico.square{border-radius:6px}
+.shape.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.shape:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.filebtn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;min-height:58px;border-radius:10px;
+  border:1px dashed var(--line);background:var(--surface);color:var(--ink);
+  font-size:1em;font-weight:700;
+}
+.filebtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.filebtn.has{border-style:solid;border-color:var(--ok);color:var(--ok)}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.actions{display:grid;gap:10px;margin-top:26px;grid-template-columns:1fr 1fr}
+.btn{
+  min-height:60px;border:none;border-radius:10px;
+  background:var(--accent);color:#fff;font-size:1.05em;font-weight:800;
+}
+.btn:hover{background:var(--accent-deep)}
+.btn:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
+.btn.ghost{background:var(--ground);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+.btn.done{background:var(--ok);color:#fff}
+
+.note{
+  margin-top:22px;display:flex;gap:11px;
+  background:var(--surface-2);border-radius:10px;padding:14px 16px;
+  font-size:.94em;color:var(--ink-soft);
+}
+.note b{flex:0 0 auto;font-weight:800;color:var(--accent-deep)}
+.note p{margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">2026 인공지능 업스킬링</p>
+  <h1>나만의 디지털 명함</h1>
+  <p class="lede">지난주에 만든 캐릭터와 이번 주에 만든 노래를 한 장에 담습니다. 적으시는 대로 아래 명함이 바로 바뀝니다.</p>
+
+  <div class="layout">
+
+  <div class="col-preview">
+    <div class="stage">
+      <canvas id="card" width="1063" height="591" aria-label="만들어지는 명함 미리보기"></canvas>
+      <p>오른쪽에 적으시는 대로 바로 바뀝니다. 실제 명함 크기(9 × 5 cm)입니다.</p>
+    </div>
+  </div>
+
+  <div class="col-form">
+
+  <ol class="how">
+    <li><span>패들렛에서 <strong>내 캐릭터 그림을 내려받습니다</strong> (그림 위 오른쪽 클릭 → 저장)</span></li>
+    <li><span><strong>그림을 올리고</strong> 이름을 적습니다</span></li>
+    <li><span>넣고 싶은 것만 골라 적으시면 됩니다 — <strong>비워두셔도 됩니다</strong></span></li>
+    <li><span>다 되면 <strong>그림으로 저장</strong>해서 패들렛에 올려주세요</span></li>
+  </ol>
+
+  <h2>내용 넣기</h2>
+
+  <div class="field">
+    <label for="photo">캐릭터 그림</label>
+    <button class="filebtn" id="photobtn" type="button">그림 고르기</button>
+    <input type="file" id="photo" accept="image/*">
+  </div>
+
+  <div class="field">
+    <label for="name">이름</label>
+    <input type="text" id="name" placeholder="홍길동" maxlength="12" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="intro">한 줄 소개 <span class="opt">(안 적으셔도 됩니다)</span></label>
+    <input type="text" id="intro" placeholder="텃밭 가꾸는 것을 좋아합니다" maxlength="28" autocomplete="off">
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label for="tel">연락처 <span class="opt">(선택)</span></label>
+      <input type="text" id="tel" placeholder="010-0000-0000" maxlength="20" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="mail">이메일 <span class="opt">(선택)</span></label>
+      <input type="text" id="mail" placeholder="hong@gmail.com" maxlength="32" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="motto">남기고 싶은 말 <span class="opt">(선택)</span></label>
+    <input type="text" id="motto" placeholder="오늘도 좋은 하루 되세요" maxlength="30" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="song">노래 주소 <span class="opt">(선택 — 넣으면 QR이 들어갑니다)</span></label>
+    <input type="text" id="song" class="mono" placeholder="https://suno.com/song/..." autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>바탕색</label>
+      <div class="pick" id="colors"></div>
+    </div>
+    <div class="field">
+      <label>그림 모양</label>
+      <div class="pick">
+        <button class="shape on" id="shape-circle" type="button"><span class="ico circle"></span>동그라미</button>
+        <button class="shape" id="shape-square" type="button"><span class="ico square"></span>네모</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="save" type="button">그림으로 저장하기</button>
+    <button class="btn ghost" id="print" type="button">인쇄하기</button>
+  </div>
+
+  <div class="note">
+    <b>안 되면</b>
+    <p>저장 버튼이 안 눌리면, 명함 그림 위에서 <strong>마우스 오른쪽 버튼 → 이미지를 다른 이름으로 저장</strong> 하셔도 됩니다.</p>
+  </div>
+
+  </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- QR 인코더 (외부 라이브러리 없음) ---------- */
+  var EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (function(){
+    var x = 1;
+    for (var i = 0; i < 255; i++){ EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+    for (var j = 255; j < 512; j++) EXP[j] = EXP[j - 255];
+  })();
+  function gmul(a, b){ return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
+
+  // 오류정정 레벨 M
+  var ECC_PER_BLOCK = [0,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28];
+  var NUM_BLOCKS    = [0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49];
+  var ECC_FORMAT_BITS = 0; // M
+
+  function rawDataModules(ver){
+    var r = (16 * ver + 128) * ver + 64;
+    if (ver >= 2){
+      var n = Math.floor(ver / 7) + 2;
+      r -= (25 * n - 10) * n - 55;
+      if (ver >= 7) r -= 36;
+    }
+    return r;
+  }
+  function rawCodewords(ver){ return Math.floor(rawDataModules(ver) / 8); }
+  function dataCodewords(ver){ return rawCodewords(ver) - ECC_PER_BLOCK[ver] * NUM_BLOCKS[ver]; }
+
+  function alignPositions(ver){
+    if (ver === 1) return [];
+    var n = Math.floor(ver / 7) + 2;
+    var size = ver * 4 + 17;
+    var step = (ver === 32) ? 26 : Math.ceil((ver * 4 + 4) / (n * 2 - 2)) * 2;
+    var res = [6];
+    for (var pos = size - 7; res.length < n; pos -= step) res.splice(1, 0, pos);
+    return res;
+  }
+
+  function rsGenerator(deg){
+    var poly = [1];
+    for (var i = 0; i < deg; i++){
+      var next = new Array(poly.length + 1);
+      for (var k = 0; k < next.length; k++) next[k] = 0;
+      for (var a = 0; a < poly.length; a++){
+        next[a] ^= gmul(poly[a], 1);
+        next[a + 1] ^= gmul(poly[a], EXP[i]);
+      }
+      poly = next;
+    }
+    return poly;
+  }
+  function rsRemainder(data, gen){
+    var ecLen = gen.length - 1;
+    var res = new Array(data.length + ecLen);
+    for (var i = 0; i < res.length; i++) res[i] = i < data.length ? data[i] : 0;
+    for (var p = 0; p < data.length; p++){
+      var coef = res[p];
+      if (coef !== 0){
+        for (var j = 1; j < gen.length; j++) res[p + j] ^= gmul(gen[j], coef);
+      }
+    }
+    return res.slice(data.length);
+  }
+
+  function utf8Bytes(str){
+    var out = [];
+    for (var i = 0; i < str.length; i++){
+      var c = str.charCodeAt(i);
+      if (c < 0x80) out.push(c);
+      else if (c < 0x800){ out.push(0xC0 | (c >> 6), 0x80 | (c & 63)); }
+      else if (c >= 0xD800 && c < 0xDC00 && i + 1 < str.length){
+        var c2 = str.charCodeAt(++i);
+        var cp = 0x10000 + ((c - 0xD800) << 10) + (c2 - 0xDC00);
+        out.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+      } else { out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)); }
+    }
+    return out;
+  }
+
+  function buildQR(text){
+    var bytes = utf8Bytes(text);
+    var ver = 0;
+    for (var v = 1; v <= 40; v++){
+      var cap = dataCodewords(v) * 8 - 4 - (v < 10 ? 8 : 16);
+      if (bytes.length * 8 <= cap){ ver = v; break; }
+    }
+    if (ver === 0) return null;
+
+    // 비트열
+    var bits = [];
+    function push(val, len){ for (var i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); }
+    push(4, 4);
+    push(bytes.length, ver < 10 ? 8 : 16);
+    for (var b = 0; b < bytes.length; b++) push(bytes[b], 8);
+    var capBits = dataCodewords(ver) * 8;
+    push(0, Math.min(4, capBits - bits.length));
+    while (bits.length % 8 !== 0) bits.push(0);
+    for (var pad = 0xEC; bits.length < capBits; pad ^= 0xEC ^ 0x11) push(pad, 8);
+
+    var dataBytes = [];
+    for (var i8 = 0; i8 < bits.length; i8 += 8){
+      var byteVal = 0;
+      for (var q = 0; q < 8; q++) byteVal = (byteVal << 1) | bits[i8 + q];
+      dataBytes.push(byteVal);
+    }
+
+    // 블록 나누기 + 오류정정 + 섞기
+    var numBlocks = NUM_BLOCKS[ver], ecLen = ECC_PER_BLOCK[ver];
+    var raw = rawCodewords(ver);
+    var numShort = numBlocks - raw % numBlocks;
+    var shortLen = Math.floor(raw / numBlocks);
+    var gen = rsGenerator(ecLen);
+    var blocks = [], k = 0;
+    for (var bi = 0; bi < numBlocks; bi++){
+      var len = shortLen - ecLen + (bi < numShort ? 0 : 1);
+      var dat = dataBytes.slice(k, k + len);
+      k += len;
+      var ecc = rsRemainder(dat, gen);
+      if (bi < numShort) dat.push(0);
+      blocks.push(dat.concat(ecc));
+    }
+    var codewords = [];
+    for (var ci = 0; ci < blocks[0].length; ci++){
+      for (var bj = 0; bj < blocks.length; bj++){
+        if (ci !== shortLen - ecLen || bj >= numShort) codewords.push(blocks[bj][ci]);
+      }
+    }
+
+    // 격자 만들기
+    var size = ver * 4 + 17;
+    var mod = [], isFn = [];
+    for (var y = 0; y < size; y++){
+      mod.push(new Array(size).fill(false));
+      isFn.push(new Array(size).fill(false));
+    }
+    function setF(x, y, dark){ mod[y][x] = dark; isFn[y][x] = true; }
+
+    function finder(cx, cy){
+      for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++){
+        var d = Math.max(Math.abs(dx), Math.abs(dy));
+        var xx = cx + dx, yy = cy + dy;
+        if (xx >= 0 && xx < size && yy >= 0 && yy < size) setF(xx, yy, d !== 2 && d !== 4);
+      }
+    }
+    function align(cx, cy){
+      for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++)
+        setF(cx + dx, cy + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+    }
+    function getBit(n, i){ return ((n >>> i) & 1) !== 0; }
+
+    function drawFormat(mask){
+      var d = (ECC_FORMAT_BITS << 3) | mask;
+      var rem = d;
+      for (var i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+      var fb = ((d << 10) | rem) ^ 0x5412;
+      for (var a = 0; a <= 5; a++) setF(8, a, getBit(fb, a));
+      setF(8, 7, getBit(fb, 6));
+      setF(8, 8, getBit(fb, 7));
+      setF(7, 8, getBit(fb, 8));
+      for (var b2 = 9; b2 < 15; b2++) setF(14 - b2, 8, getBit(fb, b2));
+      for (var c2 = 0; c2 < 8; c2++) setF(size - 1 - c2, 8, getBit(fb, c2));
+      for (var d2 = 8; d2 < 15; d2++) setF(8, size - 15 + d2, getBit(fb, d2));
+      setF(8, size - 8, true);
+    }
+
+    // 기능 패턴
+    for (var t = 0; t < size; t++){ setF(6, t, t % 2 === 0); setF(t, 6, t % 2 === 0); }
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    var ap = alignPositions(ver);
+    for (var ai = 0; ai < ap.length; ai++) for (var aj = 0; aj < ap.length; aj++){
+      if (!((ai === 0 && aj === 0) || (ai === 0 && aj === ap.length - 1) || (ai === ap.length - 1 && aj === 0)))
+        align(ap[ai], ap[aj]);
+    }
+    drawFormat(0);
+    if (ver >= 7){
+      var vrem = ver;
+      for (var vi = 0; vi < 12; vi++) vrem = (vrem << 1) ^ ((vrem >>> 11) * 0x1F25);
+      var vb = (ver << 12) | vrem;
+      for (var vj = 0; vj < 18; vj++){
+        var bit = getBit(vb, vj);
+        var aa = size - 11 + vj % 3, bb = Math.floor(vj / 3);
+        setF(aa, bb, bit); setF(bb, aa, bit);
+      }
+    }
+
+    // 데이터 채우기
+    var idx = 0;
+    for (var right = size - 1; right >= 1; right -= 2){
+      if (right === 6) right = 5;
+      for (var vert = 0; vert < size; vert++){
+        for (var jj = 0; jj < 2; jj++){
+          var xx2 = right - jj;
+          var upward = ((right + 1) & 2) === 0;
+          var yy2 = upward ? size - 1 - vert : vert;
+          if (!isFn[yy2][xx2] && idx < codewords.length * 8){
+            mod[yy2][xx2] = getBit(codewords[idx >>> 3], 7 - (idx & 7));
+            idx++;
+          }
+        }
+      }
+    }
+
+    // 마스크 선택
+    function applyMask(m){
+      for (var y2 = 0; y2 < size; y2++) for (var x2 = 0; x2 < size; x2++){
+        if (isFn[y2][x2]) continue;
+        var inv;
+        switch (m){
+          case 0: inv = (x2 + y2) % 2 === 0; break;
+          case 1: inv = y2 % 2 === 0; break;
+          case 2: inv = x2 % 3 === 0; break;
+          case 3: inv = (x2 + y2) % 3 === 0; break;
+          case 4: inv = (Math.floor(x2 / 3) + Math.floor(y2 / 2)) % 2 === 0; break;
+          case 5: inv = (x2 * y2) % 2 + (x2 * y2) % 3 === 0; break;
+          case 6: inv = ((x2 * y2) % 2 + (x2 * y2) % 3) % 2 === 0; break;
+          default: inv = ((x2 + y2) % 2 + (x2 * y2) % 3) % 2 === 0; break;
+        }
+        if (inv) mod[y2][x2] = !mod[y2][x2];
+      }
+    }
+    function penalty(){
+      var p = 0, x3, y3, i3;
+      // 규칙 1
+      for (y3 = 0; y3 < size; y3++){
+        var runColor = mod[y3][0], runLen = 1;
+        for (x3 = 1; x3 < size; x3++){
+          if (mod[y3][x3] === runColor) { runLen++; }
+          else { if (runLen >= 5) p += 3 + (runLen - 5); runColor = mod[y3][x3]; runLen = 1; }
+        }
+        if (runLen >= 5) p += 3 + (runLen - 5);
+      }
+      for (x3 = 0; x3 < size; x3++){
+        var rc = mod[0][x3], rl = 1;
+        for (y3 = 1; y3 < size; y3++){
+          if (mod[y3][x3] === rc) { rl++; }
+          else { if (rl >= 5) p += 3 + (rl - 5); rc = mod[y3][x3]; rl = 1; }
+        }
+        if (rl >= 5) p += 3 + (rl - 5);
+      }
+      // 규칙 2
+      for (y3 = 0; y3 < size - 1; y3++) for (x3 = 0; x3 < size - 1; x3++){
+        var c = mod[y3][x3];
+        if (c === mod[y3][x3 + 1] && c === mod[y3 + 1][x3] && c === mod[y3 + 1][x3 + 1]) p += 3;
+      }
+      // 규칙 3
+      var pat1 = [true,false,true,true,true,false,true,false,false,false,false];
+      var pat2 = [false,false,false,false,true,false,true,true,true,false,true];
+      function match(get, len){
+        var cnt = 0;
+        for (var s = 0; s + 11 <= len; s++){
+          var ok1 = true, ok2 = true;
+          for (var t2 = 0; t2 < 11; t2++){
+            var vv = get(s + t2);
+            if (vv !== pat1[t2]) ok1 = false;
+            if (vv !== pat2[t2]) ok2 = false;
+          }
+          if (ok1 || ok2) cnt++;
+        }
+        return cnt;
+      }
+      for (y3 = 0; y3 < size; y3++){
+        (function(yy){ p += 40 * match(function(i){ return mod[yy][i]; }, size); })(y3);
+      }
+      for (x3 = 0; x3 < size; x3++){
+        (function(xx){ p += 40 * match(function(i){ return mod[i][xx]; }, size); })(x3);
+      }
+      // 규칙 4
+      var dark = 0;
+      for (y3 = 0; y3 < size; y3++) for (x3 = 0; x3 < size; x3++) if (mod[y3][x3]) dark++;
+      var total = size * size;
+      var k5 = Math.floor(Math.abs(dark * 20 - total * 10) / total);
+      p += k5 * 10;
+      return p;
+    }
+
+    var bestMask = 0, bestScore = Infinity;
+    for (var m2 = 0; m2 < 8; m2++){
+      applyMask(m2); drawFormat(m2);
+      var sc = penalty();
+      if (sc < bestScore){ bestScore = sc; bestMask = m2; }
+      applyMask(m2); // 되돌리기
+    }
+    applyMask(bestMask); drawFormat(bestMask);
+
+    return { size: size, modules: mod, version: ver, mask: bestMask };
+  }
+
+  /* ---------- 명함 그리기 ---------- */
+  var W = 1063, H = 591;
+  var cv = document.getElementById('card');
+  var ctx = cv.getContext('2d');
+
+  var THEMES = [
+    { key:'white',  bg:'#ffffff', ink:'#141c28', soft:'#5c6675', line:'#dde1e8', qr:'#141c28', ring:'#eceff4' },
+    { key:'navy',   bg:'#1b3252', ink:'#ffffff', soft:'#b9c6da', line:'#365party', qr:'#1b3252', ring:'#2b4straight' },
+    { key:'teal',   bg:'#0e5a58', ink:'#ffffff', soft:'#a9d3d0', line:'#2b7insert', qr:'#0e5a58', ring:'#1c6f6c' },
+    { key:'sand',   bg:'#f4ede2', ink:'#3b2f22', soft:'#7a6a56', line:'#e0d4c2', qr:'#3b2f22', ring:'#e8ddcc' }
+  ];
+  THEMES[1].line = '#365party'; // 자리표시 — 아래에서 정리
+  var PALETTE = [
+    { bg:'#ffffff', ink:'#141c28', soft:'#5c6675', ring:'#eceff4', qr:'#141c28' },
+    { bg:'#1b3252', ink:'#ffffff', soft:'#b9c6da', ring:'#2b456b', qr:'#1b3252' },
+    { bg:'#0e5a58', ink:'#ffffff', soft:'#a9d3d0', ring:'#1c6f6c', qr:'#0e5a58' },
+    { bg:'#f4ede2', ink:'#3b2f22', soft:'#7a6a56', ring:'#e8ddcc', qr:'#3b2f22' }
+  ];
+  var theme = 0;
+  var shape = 'circle';
+  var photo = null;
+
+  // 색 고르기 버튼
+  var colors = document.getElementById('colors');
+  PALETTE.forEach(function(p, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'swatch' + (i === 0 ? ' on' : '');
+    b.style.background = p.bg;
+    b.setAttribute('aria-label', '바탕색 ' + (i + 1));
+    b.addEventListener('click', function(){
+      theme = i;
+      Array.prototype.forEach.call(colors.children, function(c, j){
+        c.classList.toggle('on', j === i);
+      });
+      draw();
+    });
+    colors.appendChild(b);
+  });
+
+  var shapeBtns = {
+    circle: document.getElementById('shape-circle'),
+    square: document.getElementById('shape-square')
+  };
+  Object.keys(shapeBtns).forEach(function(k){
+    shapeBtns[k].addEventListener('click', function(){
+      shape = k;
+      Object.keys(shapeBtns).forEach(function(j){
+        shapeBtns[j].classList.toggle('on', j === k);
+      });
+      draw();
+    });
+  });
+
+  function val(id){ return document.getElementById(id).value.trim(); }
+
+  function roundRect(c, x, y, w, h, r){
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  function draw(){
+    var p = PALETTE[theme];
+    var name = val('name') || '이름';
+    var intro = val('intro');
+    var tel = val('tel');
+    var mail = val('mail');
+    var motto = val('motto');
+    var song = val('song');
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = p.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    var pad = 64;
+
+    // QR (있을 때만, 작게)
+    var qrSize = 0;
+    if (song){
+      var url = /^https?:\/\//i.test(song) ? song : 'https://' + song;
+      var qr = buildQR(url);
+      if (qr){
+        qrSize = 188;
+        var quiet = 3;
+        var n = qr.size + quiet * 2;
+        var unit = qrSize / n;
+        var qx = W - pad - qrSize, qy = H - pad - qrSize - 34;
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, qx - 10, qy - 10, qrSize + 20, qrSize + 20, 12);
+        ctx.fill();
+        ctx.fillStyle = p.qr;
+        for (var y = 0; y < qr.size; y++) for (var x = 0; x < qr.size; x++){
+          if (qr.modules[y][x])
+            ctx.fillRect(qx + (x + quiet) * unit, qy + (y + quiet) * unit,
+                         Math.ceil(unit), Math.ceil(unit));
+        }
+        ctx.fillStyle = p.soft;
+        ctx.font = '600 20px "Nanum Gothic", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('찍으면 제 노래가 나옵니다', qx + qrSize / 2, qy + qrSize + 34);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    // 캐릭터 원
+    var d = 236, cx = pad + d / 2, cy = H / 2 - 10;
+    ctx.save();
+    if (shape === 'circle'){
+      ctx.beginPath();
+      ctx.arc(cx, cy, d / 2, 0, Math.PI * 2);
+    } else {
+      roundRect(ctx, cx - d / 2, cy - d / 2, d, d, 34);
+    }
+    ctx.fillStyle = p.ring;
+    ctx.fill();
+    ctx.clip();
+    if (photo){
+      var s = Math.max(d / photo.width, d / photo.height);
+      var pw = photo.width * s, ph = photo.height * s;
+      ctx.drawImage(photo, cx - pw / 2, cy - ph / 2, pw, ph);
+    } else {
+      ctx.fillStyle = p.soft;
+      ctx.font = '800 96px "Nanum Gothic", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name.charAt(0), cx, cy + 4);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.restore();
+
+    // 글자 영역
+    var tx = pad + d + 46;
+    var tw = (qrSize ? (W - pad - qrSize - 40) : (W - pad)) - tx;
+
+    function clip(text, font, maxw){
+      ctx.font = font;
+      if (ctx.measureText(text).width <= maxw) return text;
+      var t = text;
+      while (t.length > 1 && ctx.measureText(t + '…').width > maxw) t = t.slice(0, -1);
+      return t + '…';
+    }
+
+    // 넣은 항목만큼만 차지하도록 글자 덩어리를 세로 가운데로
+    var span = 0;
+    if (intro) span += 52;
+    if (motto) span += 54;
+    if (tel || mail){ span += 88; if (tel && mail) span += 36; }
+    var y = Math.round(cy - span / 2 + 20);
+
+    ctx.fillStyle = p.ink;
+    ctx.font = '800 58px "Nanum Gothic", sans-serif';
+    ctx.fillText(clip(name, ctx.font, tw), tx, y);
+
+    if (intro){
+      y += 52;
+      ctx.fillStyle = p.soft;
+      ctx.font = '400 27px "Nanum Gothic", sans-serif';
+      ctx.fillText(clip(intro, ctx.font, tw), tx, y);
+    }
+
+    if (motto){
+      y += 54;
+      ctx.fillStyle = p.ink;
+      ctx.font = '700 26px "Nanum Gothic", sans-serif';
+      ctx.fillText(clip('“' + motto + '”', ctx.font, tw), tx, y);
+    }
+
+    if (tel || mail){
+      y += 46;
+      ctx.strokeStyle = p.ring;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(tx, y);
+      ctx.lineTo(tx + Math.min(tw, 300), y);
+      ctx.stroke();
+      y += 42;
+      ctx.fillStyle = p.soft;
+      ctx.font = '400 25px "Nanum Gothic", sans-serif';
+      if (tel){ ctx.fillText(clip(tel, ctx.font, tw), tx, y); y += 36; }
+      if (mail){ ctx.fillText(clip(mail, ctx.font, tw), tx, y); }
+    }
+  }
+
+  // 입력 반응
+  ['name', 'intro', 'tel', 'mail', 'motto', 'song'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', draw);
+  });
+
+  // 그림 올리기
+  var photoInput = document.getElementById('photo');
+  var photoBtn = document.getElementById('photobtn');
+  photoBtn.addEventListener('click', function(){ photoInput.click(); });
+  photoInput.addEventListener('change', function(){
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        photo = img;
+        photoBtn.textContent = '그림을 바꾸려면 여기를 누르세요';
+        photoBtn.classList.add('has');
+        draw();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // 저장
+  document.getElementById('save').addEventListener('click', function(){
+    var btn = this;
+    try {
+      var a = document.createElement('a');
+      a.download = (val('name') || '명함') + '_명함.png';
+      a.href = cv.toDataURL('image/png');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      var keep = btn.dataset.label || btn.textContent;
+      btn.dataset.label = keep;
+      btn.classList.add('done');
+      btn.textContent = '저장했습니다';
+      clearTimeout(btn._t);
+      btn._t = setTimeout(function(){ btn.classList.remove('done'); btn.textContent = keep; }, 2000);
+    } catch (e) {
+      alert('저장이 안 됩니다. 명함 그림 위에서 마우스 오른쪽 버튼을 눌러 저장해 주세요.');
+    }
+  });
+
+  // 인쇄
+  document.getElementById('print').addEventListener('click', function(){
+    var w = window.open('', '_blank');
+    if (!w){ alert('인쇄 창이 열리지 않았습니다. 저장 후 인쇄해 주세요.'); return; }
+    w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>명함</title>' +
+      '<style>@page{margin:12mm}body{margin:0}img{width:90mm;height:50mm;display:block}</style>' +
+      '</head><body><img src="' + cv.toDataURL('image/png') + '"></body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(function(){ w.print(); }, 400);
+  });
+
+  // 글꼴이 준비되면 다시 그린다
+  draw();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+})();
+</script>
+</body>
+</html>
