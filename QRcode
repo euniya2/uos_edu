@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노래 QR 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+
+<style>
+:root{
+  --ground:#ffffff; --surface:#f6f8fb; --surface-2:#eceff4; --line:#dde1e8;
+  --ink:#141c28; --ink-soft:#5c6675;
+  --accent:#1b3252; --accent-deep:#0e1f38; --accent-soft:#e5eaf2;
+  --mark-ink:#8a5206; --mark-bg:#fdf1dd; --mark-line:#e8c691;
+  --ok:#1a6b48; --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161d; --surface:#1a2029; --surface-2:#222a35; --line:#333d4b;
+    --ink:#e8ecf2; --ink-soft:#a3aec0;
+    --accent:#3d6aa3; --accent-deep:#5c8bc4; --accent-soft:#232f42;
+    --mark-ink:#f2c684; --mark-bg:#3a2c14; --mark-line:#6b5124; --ok:#5cbd91;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161d; --surface:#1a2029; --surface-2:#222a35; --line:#333d4b;
+  --ink:#e8ecf2; --ink-soft:#a3aec0;
+  --accent:#3d6aa3; --accent-deep:#5c8bc4; --accent-soft:#232f42;
+  --mark-ink:#f2c684; --mark-bg:#3a2c14; --mark-line:#6b5124; --ok:#5cbd91;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Pretendard Variable","Pretendard","Nanum Gothic","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:17px;line-height:1.75;-webkit-text-size-adjust:100%;
+}
+.wrap{max-width:720px;margin:0 auto;padding:36px 20px 70px}
+.eyebrow{font-size:.82em;font-weight:700;letter-spacing:.14em;color:var(--accent);margin:0 0 8px}
+h1{font-size:2em;font-weight:800;line-height:1.25;margin:0 0 10px;letter-spacing:-.01em}
+.lede{margin:0 0 28px;color:var(--ink-soft)}
+
+ol.how{margin:0 0 28px;padding:0;list-style:none;counter-reset:s;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:8px 20px}
+ol.how li{counter-increment:s;display:flex;gap:13px;align-items:flex-start;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+ol.how li:last-child{border-bottom:none}
+ol.how li::before{content:counter(s);flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);color:#fff;font-family:"Nanum Gothic Coding",monospace;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-size:.85em;margin-top:3px}
+
+label{display:block;font-weight:800;font-size:.95em;margin:0 0 8px}
+label .opt{font-weight:400;color:var(--ink-soft);font-size:.9em}
+input[type=text]{
+  width:100%;padding:16px 16px;border-radius:10px;
+  border:1px solid var(--line);background:var(--ground);color:var(--ink);
+  font-family:"Nanum Gothic Coding","D2Coding",monospace;font-size:1em;
+}
+input[type=text]:focus{outline:3px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+.field{margin-bottom:18px}
+
+button{font-family:inherit;cursor:pointer}
+.btn{
+  width:100%;min-height:60px;border:none;border-radius:10px;
+  background:var(--accent);color:#fff;font-size:1.08em;font-weight:800;
+}
+.btn:hover{background:var(--accent-deep)}
+.btn:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
+.btn.ghost{background:var(--ground);color:var(--ink);border:1px solid var(--line);min-height:52px;font-size:1em}
+.btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+
+.msg{margin-top:14px;padding:13px 16px;border-radius:10px;
+  background:var(--mark-bg);color:var(--mark-ink);font-weight:700;font-size:.95em;
+  box-shadow:inset 0 0 0 1px var(--mark-line)}
+.msg[hidden]{display:none}
+
+.result{margin-top:30px;text-align:center}
+.result[hidden]{display:none}
+.card{
+  display:inline-block;background:#ffffff;
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:26px 26px 20px;
+}
+#qr{display:block;width:340px;height:340px;image-rendering:pixelated}
+@media(max-width:480px){#qr{width:270px;height:270px}}
+.who{margin:16px 0 0;font-size:1.15em;font-weight:800;color:#141c28}
+.who[hidden]{display:none}
+.addr{margin:6px 0 0;font-family:"Nanum Gothic Coding",monospace;
+  font-size:.78em;color:#5c6675;word-break:break-all;max-width:330px}
+.after{margin:20px auto 0;max-width:420px;display:flex;flex-direction:column;gap:10px}
+.tip{margin:18px 0 0;color:var(--ink-soft);font-size:.92em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">2026 인공지능 업스킬링</p>
+  <h1>노래 QR 만들기</h1>
+  <p class="lede">만든 노래 주소를 넣으면 QR이 만들어집니다. 화면에 뜬 QR을 휴대폰 카메라로 비추면 노래가 열립니다.</p>
+
+  <ol class="how">
+    <li><span>수노에서 만든 노래의 <strong>점 세 개( ··· )</strong> 를 눌러 <strong>공유 → 링크 복사</strong></span></li>
+    <li><span>아래 칸에 <strong>붙여넣기</strong> (Ctrl 누른 채 V)</span></li>
+    <li><span><strong>QR 만들기</strong> 를 누르기</span></li>
+    <li><span>휴대폰 <strong>카메라</strong>로 화면의 QR을 비추면 노래가 열립니다</span></li>
+  </ol>
+
+  <div class="field">
+    <label for="url">노래 주소</label>
+    <input type="text" id="url" placeholder="https://suno.com/song/..." autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="field">
+    <label for="name">이름 <span class="opt">(안 적으셔도 됩니다)</span></label>
+    <input type="text" id="name" placeholder="홍길동" autocomplete="off">
+  </div>
+
+  <button class="btn" id="make" type="button">QR 만들기</button>
+  <p class="msg" id="msg" hidden></p>
+
+  <div class="result" id="result" hidden>
+    <div class="card">
+      <canvas id="qr" width="340" height="340"></canvas>
+      <p class="who" id="who" hidden></p>
+      <p class="addr" id="addr"></p>
+    </div>
+    <div class="after">
+      <button class="btn ghost" id="again" type="button">다른 주소로 다시 만들기</button>
+    </div>
+    <p class="tip">휴대폰 카메라를 켜고 QR을 비추기만 하면 됩니다. 따로 앱을 깔지 않으셔도 됩니다.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- QR 인코더 (외부 라이브러리 없음) ---------- */
+  var EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (function(){
+    var x = 1;
+    for (var i = 0; i < 255; i++){ EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+    for (var j = 255; j < 512; j++) EXP[j] = EXP[j - 255];
+  })();
+  function gmul(a, b){ return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
+
+  // 오류정정 레벨 M
+  var ECC_PER_BLOCK = [0,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28];
+  var NUM_BLOCKS    = [0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49];
+  var ECC_FORMAT_BITS = 0; // M
+
+  function rawDataModules(ver){
+    var r = (16 * ver + 128) * ver + 64;
+    if (ver >= 2){
+      var n = Math.floor(ver / 7) + 2;
+      r -= (25 * n - 10) * n - 55;
+      if (ver >= 7) r -= 36;
+    }
+    return r;
+  }
+  function rawCodewords(ver){ return Math.floor(rawDataModules(ver) / 8); }
+  function dataCodewords(ver){ return rawCodewords(ver) - ECC_PER_BLOCK[ver] * NUM_BLOCKS[ver]; }
+
+  function alignPositions(ver){
+    if (ver === 1) return [];
+    var n = Math.floor(ver / 7) + 2;
+    var size = ver * 4 + 17;
+    var step = (ver === 32) ? 26 : Math.ceil((ver * 4 + 4) / (n * 2 - 2)) * 2;
+    var res = [6];
+    for (var pos = size - 7; res.length < n; pos -= step) res.splice(1, 0, pos);
+    return res;
+  }
+
+  function rsGenerator(deg){
+    var poly = [1];
+    for (var i = 0; i < deg; i++){
+      var next = new Array(poly.length + 1);
+      for (var k = 0; k < next.length; k++) next[k] = 0;
+      for (var a = 0; a < poly.length; a++){
+        next[a] ^= gmul(poly[a], 1);
+        next[a + 1] ^= gmul(poly[a], EXP[i]);
+      }
+      poly = next;
+    }
+    return poly;
+  }
+  function rsRemainder(data, gen){
+    var ecLen = gen.length - 1;
+    var res = new Array(data.length + ecLen);
+    for (var i = 0; i < res.length; i++) res[i] = i < data.length ? data[i] : 0;
+    for (var p = 0; p < data.length; p++){
+      var coef = res[p];
+      if (coef !== 0){
+        for (var j = 1; j < gen.length; j++) res[p + j] ^= gmul(gen[j], coef);
+      }
+    }
+    return res.slice(data.length);
+  }
+
+  function utf8Bytes(str){
+    var out = [];
+    for (var i = 0; i < str.length; i++){
+      var c = str.charCodeAt(i);
+      if (c < 0x80) out.push(c);
+      else if (c < 0x800){ out.push(0xC0 | (c >> 6), 0x80 | (c & 63)); }
+      else if (c >= 0xD800 && c < 0xDC00 && i + 1 < str.length){
+        var c2 = str.charCodeAt(++i);
+        var cp = 0x10000 + ((c - 0xD800) << 10) + (c2 - 0xDC00);
+        out.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+      } else { out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)); }
+    }
+    return out;
+  }
+
+  function buildQR(text){
+    var bytes = utf8Bytes(text);
+    var ver = 0;
+    for (var v = 1; v <= 40; v++){
+      var cap = dataCodewords(v) * 8 - 4 - (v < 10 ? 8 : 16);
+      if (bytes.length * 8 <= cap){ ver = v; break; }
+    }
+    if (ver === 0) return null;
+
+    // 비트열
+    var bits = [];
+    function push(val, len){ for (var i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); }
+    push(4, 4);
+    push(bytes.length, ver < 10 ? 8 : 16);
+    for (var b = 0; b < bytes.length; b++) push(bytes[b], 8);
+    var capBits = dataCodewords(ver) * 8;
+    push(0, Math.min(4, capBits - bits.length));
+    while (bits.length % 8 !== 0) bits.push(0);
+    for (var pad = 0xEC; bits.length < capBits; pad ^= 0xEC ^ 0x11) push(pad, 8);
+
+    var dataBytes = [];
+    for (var i8 = 0; i8 < bits.length; i8 += 8){
+      var byteVal = 0;
+      for (var q = 0; q < 8; q++) byteVal = (byteVal << 1) | bits[i8 + q];
+      dataBytes.push(byteVal);
+    }
+
+    // 블록 나누기 + 오류정정 + 섞기
+    var numBlocks = NUM_BLOCKS[ver], ecLen = ECC_PER_BLOCK[ver];
+    var raw = rawCodewords(ver);
+    var numShort = numBlocks - raw % numBlocks;
+    var shortLen = Math.floor(raw / numBlocks);
+    var gen = rsGenerator(ecLen);
+    var blocks = [], k = 0;
+    for (var bi = 0; bi < numBlocks; bi++){
+      var len = shortLen - ecLen + (bi < numShort ? 0 : 1);
+      var dat = dataBytes.slice(k, k + len);
+      k += len;
+      var ecc = rsRemainder(dat, gen);
+      if (bi < numShort) dat.push(0);
+      blocks.push(dat.concat(ecc));
+    }
+    var codewords = [];
+    for (var ci = 0; ci < blocks[0].length; ci++){
+      for (var bj = 0; bj < blocks.length; bj++){
+        if (ci !== shortLen - ecLen || bj >= numShort) codewords.push(blocks[bj][ci]);
+      }
+    }
+
+    // 격자 만들기
+    var size = ver * 4 + 17;
+    var mod = [], isFn = [];
+    for (var y = 0; y < size; y++){
+      mod.push(new Array(size).fill(false));
+      isFn.push(new Array(size).fill(false));
+    }
+    function setF(x, y, dark){ mod[y][x] = dark; isFn[y][x] = true; }
+
+    function finder(cx, cy){
+      for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++){
+        var d = Math.max(Math.abs(dx), Math.abs(dy));
+        var xx = cx + dx, yy = cy + dy;
+        if (xx >= 0 && xx < size && yy >= 0 && yy < size) setF(xx, yy, d !== 2 && d !== 4);
+      }
+    }
+    function align(cx, cy){
+      for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++)
+        setF(cx + dx, cy + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+    }
+    function getBit(n, i){ return ((n >>> i) & 1) !== 0; }
+
+    function drawFormat(mask){
+      var d = (ECC_FORMAT_BITS << 3) | mask;
+      var rem = d;
+      for (var i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+      var fb = ((d << 10) | rem) ^ 0x5412;
+      for (var a = 0; a <= 5; a++) setF(8, a, getBit(fb, a));
+      setF(8, 7, getBit(fb, 6));
+      setF(8, 8, getBit(fb, 7));
+      setF(7, 8, getBit(fb, 8));
+      for (var b2 = 9; b2 < 15; b2++) setF(14 - b2, 8, getBit(fb, b2));
+      for (var c2 = 0; c2 < 8; c2++) setF(size - 1 - c2, 8, getBit(fb, c2));
+      for (var d2 = 8; d2 < 15; d2++) setF(8, size - 15 + d2, getBit(fb, d2));
+      setF(8, size - 8, true);
+    }
+
+    // 기능 패턴
+    for (var t = 0; t < size; t++){ setF(6, t, t % 2 === 0); setF(t, 6, t % 2 === 0); }
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    var ap = alignPositions(ver);
+    for (var ai = 0; ai < ap.length; ai++) for (var aj = 0; aj < ap.length; aj++){
+      if (!((ai === 0 && aj === 0) || (ai === 0 && aj === ap.length - 1) || (ai === ap.length - 1 && aj === 0)))
+        align(ap[ai], ap[aj]);
+    }
+    drawFormat(0);
+    if (ver >= 7){
+      var vrem = ver;
+      for (var vi = 0; vi < 12; vi++) vrem = (vrem << 1) ^ ((vrem >>> 11) * 0x1F25);
+      var vb = (ver << 12) | vrem;
+      for (var vj = 0; vj < 18; vj++){
+        var bit = getBit(vb, vj);
+        var aa = size - 11 + vj % 3, bb = Math.floor(vj / 3);
+        setF(aa, bb, bit); setF(bb, aa, bit);
+      }
+    }
+
+    // 데이터 채우기
+    var idx = 0;
+    for (var right = size - 1; right >= 1; right -= 2){
+      if (right === 6) right = 5;
+      for (var vert = 0; vert < size; vert++){
+        for (var jj = 0; jj < 2; jj++){
+          var xx2 = right - jj;
+          var upward = ((right + 1) & 2) === 0;
+          var yy2 = upward ? size - 1 - vert : vert;
+          if (!isFn[yy2][xx2] && idx < codewords.length * 8){
+            mod[yy2][xx2] = getBit(codewords[idx >>> 3], 7 - (idx & 7));
+            idx++;
+          }
+        }
+      }
+    }
+
+    // 마스크 선택
+    function applyMask(m){
+      for (var y2 = 0; y2 < size; y2++) for (var x2 = 0; x2 < size; x2++){
+        if (isFn[y2][x2]) continue;
+        var inv;
+        switch (m){
+          case 0: inv = (x2 + y2) % 2 === 0; break;
+          case 1: inv = y2 % 2 === 0; break;
+          case 2: inv = x2 % 3 === 0; break;
+          case 3: inv = (x2 + y2) % 3 === 0; break;
+          case 4: inv = (Math.floor(x2 / 3) + Math.floor(y2 / 2)) % 2 === 0; break;
+          case 5: inv = (x2 * y2) % 2 + (x2 * y2) % 3 === 0; break;
+          case 6: inv = ((x2 * y2) % 2 + (x2 * y2) % 3) % 2 === 0; break;
+          default: inv = ((x2 + y2) % 2 + (x2 * y2) % 3) % 2 === 0; break;
+        }
+        if (inv) mod[y2][x2] = !mod[y2][x2];
+      }
+    }
+    function penalty(){
+      var p = 0, x3, y3, i3;
+      // 규칙 1
+      for (y3 = 0; y3 < size; y3++){
+        var runColor = mod[y3][0], runLen = 1;
+        for (x3 = 1; x3 < size; x3++){
+          if (mod[y3][x3] === runColor) { runLen++; }
+          else { if (runLen >= 5) p += 3 + (runLen - 5); runColor = mod[y3][x3]; runLen = 1; }
+        }
+        if (runLen >= 5) p += 3 + (runLen - 5);
+      }
+      for (x3 = 0; x3 < size; x3++){
+        var rc = mod[0][x3], rl = 1;
+        for (y3 = 1; y3 < size; y3++){
+          if (mod[y3][x3] === rc) { rl++; }
+          else { if (rl >= 5) p += 3 + (rl - 5); rc = mod[y3][x3]; rl = 1; }
+        }
+        if (rl >= 5) p += 3 + (rl - 5);
+      }
+      // 규칙 2
+      for (y3 = 0; y3 < size - 1; y3++) for (x3 = 0; x3 < size - 1; x3++){
+        var c = mod[y3][x3];
+        if (c === mod[y3][x3 + 1] && c === mod[y3 + 1][x3] && c === mod[y3 + 1][x3 + 1]) p += 3;
+      }
+      // 규칙 3
+      var pat1 = [true,false,true,true,true,false,true,false,false,false,false];
+      var pat2 = [false,false,false,false,true,false,true,true,true,false,true];
+      function match(get, len){
+        var cnt = 0;
+        for (var s = 0; s + 11 <= len; s++){
+          var ok1 = true, ok2 = true;
+          for (var t2 = 0; t2 < 11; t2++){
+            var vv = get(s + t2);
+            if (vv !== pat1[t2]) ok1 = false;
+            if (vv !== pat2[t2]) ok2 = false;
+          }
+          if (ok1 || ok2) cnt++;
+        }
+        return cnt;
+      }
+      for (y3 = 0; y3 < size; y3++){
+        (function(yy){ p += 40 * match(function(i){ return mod[yy][i]; }, size); })(y3);
+      }
+      for (x3 = 0; x3 < size; x3++){
+        (function(xx){ p += 40 * match(function(i){ return mod[i][xx]; }, size); })(x3);
+      }
+      // 규칙 4
+      var dark = 0;
+      for (y3 = 0; y3 < size; y3++) for (x3 = 0; x3 < size; x3++) if (mod[y3][x3]) dark++;
+      var total = size * size;
+      var k5 = Math.floor(Math.abs(dark * 20 - total * 10) / total);
+      p += k5 * 10;
+      return p;
+    }
+
+    var bestMask = 0, bestScore = Infinity;
+    for (var m2 = 0; m2 < 8; m2++){
+      applyMask(m2); drawFormat(m2);
+      var sc = penalty();
+      if (sc < bestScore){ bestScore = sc; bestMask = m2; }
+      applyMask(m2); // 되돌리기
+    }
+    applyMask(bestMask); drawFormat(bestMask);
+
+    return { size: size, modules: mod, version: ver, mask: bestMask };
+  }
+
+  window.__qr = buildQR;   // 검증용
+
+  /* ---------- 화면 동작 ---------- */
+  var urlEl = document.getElementById('url');
+  var nameEl = document.getElementById('name');
+  var msgEl = document.getElementById('msg');
+  var resEl = document.getElementById('result');
+  var whoEl = document.getElementById('who');
+  var addrEl = document.getElementById('addr');
+  var canvas = document.getElementById('qr');
+
+  function say(text){
+    if (!text){ msgEl.hidden = true; return; }
+    msgEl.textContent = text; msgEl.hidden = false;
+  }
+
+  function draw(qr){
+    var quiet = 4;
+    var n = qr.size + quiet * 2;
+    var scale = 10;
+    canvas.width = n * scale;
+    canvas.height = n * scale;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#141c28';
+    for (var y = 0; y < qr.size; y++) for (var x = 0; x < qr.size; x++){
+      if (qr.modules[y][x]) ctx.fillRect((x + quiet) * scale, (y + quiet) * scale, scale, scale);
+    }
+  }
+
+  function make(){
+    var url = urlEl.value.trim();
+    if (!url){ say('노래 주소를 먼저 붙여넣어 주세요.'); resEl.hidden = true; return; }
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    var qr = buildQR(url);
+    if (!qr){ say('주소가 너무 깁니다. 다시 복사해 주세요.'); resEl.hidden = true; return; }
+    say('');
+    draw(qr);
+    var who = nameEl.value.trim();
+    whoEl.textContent = who;
+    whoEl.hidden = !who;
+    addrEl.textContent = url;
+    resEl.hidden = false;
+    resEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('make').addEventListener('click', make);
+  urlEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') make(); });
+  nameEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') make(); });
+  document.getElementById('again').addEventListener('click', function(){
+    urlEl.value = ''; resEl.hidden = true; say(''); urlEl.focus();
+  });
+})();
+</script>
+</body>
+</html>
