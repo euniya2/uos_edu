@@ -128,6 +128,7 @@ input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:3
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 
 .actions{display:grid;gap:10px;margin-top:26px;grid-template-columns:1fr 1fr}
+.actions .full{grid-column:1 / -1}
 .btn{
   min-height:60px;border:none;border-radius:10px;
   background:var(--accent);color:#fff;font-size:1.05em;font-weight:800;
@@ -151,7 +152,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 <div class="wrap">
   <p class="eyebrow">2026 인공지능 업스킬링</p>
   <h1>나만의 디지털 명함</h1>
-  <p class="lede">지난주에 만든 캐릭터와 이번 주에 만든 노래를 한 장에 담습니다. 적으시는 대로 아래 명함이 바로 바뀝니다.</p>
+  <p class="lede">직접 만든 캐릭터와 노래 혹은 스토리북을 한 장에 담습니다. 적으시는 대로 아래 명함이 바로 바뀝니다.</p>
 
   <div class="layout">
 
@@ -168,7 +169,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <li><span>패들렛에서 <strong>내 캐릭터 그림을 내려받습니다</strong> (그림 위 오른쪽 클릭 → 저장)</span></li>
     <li><span><strong>그림을 올리고</strong> 이름을 적습니다</span></li>
     <li><span>넣고 싶은 것만 골라 적으시면 됩니다 — <strong>비워두셔도 됩니다</strong></span></li>
-    <li><span>다 되면 <strong>그림으로 저장</strong>해서 패들렛에 올려주세요</span></li>
+    <li><span>다 되면 <strong>이미지 복사</strong>해서 패들렛에 붙여넣으세요 (Ctrl 누른 채 V)</span></li>
   </ol>
 
   <h2>내용 넣기</h2>
@@ -213,7 +214,11 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
   </div>
 
   <div class="field">
-    <label for="song">노래 주소 <span class="opt">(선택 — 넣으면 QR이 들어갑니다)</span></label>
+    <label for="song">노래 혹은 스토리북 링크 <span class="opt">(선택 — 넣으면 QR이 들어갑니다)</span></label>
+    <div class="pick" style="margin-bottom:10px">
+      <button class="shape on" id="kind-song" type="button">노래</button>
+      <button class="shape" id="kind-book" type="button">스토리북</button>
+    </div>
     <input type="text" id="song" class="mono" placeholder="https://suno.com/song/..." autocomplete="off" spellcheck="false">
   </div>
 
@@ -232,13 +237,14 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
   </div>
 
   <div class="actions">
-    <button class="btn" id="save" type="button">그림으로 저장하기</button>
+    <button class="btn full" id="copyimg" type="button">이미지 복사하기</button>
+    <button class="btn ghost" id="save" type="button">그림으로 저장하기</button>
     <button class="btn ghost" id="print" type="button">인쇄하기</button>
   </div>
 
   <div class="note">
     <b>안 되면</b>
-    <p>저장 버튼이 안 눌리면, 명함 그림 위에서 <strong>마우스 오른쪽 버튼 → 이미지를 다른 이름으로 저장</strong> 하셔도 됩니다.</p>
+    <p>버튼이 안 눌리면, 명함 그림 위에서 <strong>마우스 오른쪽 버튼</strong>을 눌러 <strong>이미지 복사</strong> 또는 <strong>이미지를 다른 이름으로 저장</strong> 하셔도 됩니다.</p>
   </div>
 
   </div>
@@ -648,6 +654,27 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     });
   });
 
+  // 링크 종류 (노래 / 스토리북) — QR 아래 글씨가 바뀐다
+  var kind = 'song';
+  var KIND = {
+    song: { caption: "'Suno' 나의 브랜드송", hint: 'https://suno.com/song/...' },
+    book: { caption: '나의 스토리북',        hint: 'https://gemini.google.com/share/...' }
+  };
+  var kindBtns = {
+    song: document.getElementById('kind-song'),
+    book: document.getElementById('kind-book')
+  };
+  Object.keys(kindBtns).forEach(function(k){
+    kindBtns[k].addEventListener('click', function(){
+      kind = k;
+      Object.keys(kindBtns).forEach(function(j){
+        kindBtns[j].classList.toggle('on', j === k);
+      });
+      document.getElementById('song').placeholder = KIND[k].hint;
+      draw();
+    });
+  });
+
   function val(id){ return document.getElementById(id).value.trim(); }
 
   function roundRect(c, x, y, w, h, r){
@@ -698,7 +725,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
         ctx.fillStyle = p.soft;
         ctx.font = '600 20px "Nanum Gothic", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText("'Suno' 나의 브랜드송", qx + qrSize / 2, qy + qrSize + 34);
+        ctx.fillText(KIND[kind].caption, qx + qrSize / 2, qy + qrSize + 34);
         ctx.textAlign = 'left';
       }
     }
@@ -812,6 +839,34 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     reader.readAsDataURL(f);
   });
 
+  function flash(btn, text){
+    var keep = btn.dataset.label || btn.textContent;
+    btn.dataset.label = keep;
+    btn.classList.add('done');
+    btn.textContent = text;
+    clearTimeout(btn._t);
+    btn._t = setTimeout(function(){
+      btn.classList.remove('done');
+      btn.textContent = btn.dataset.label;
+    }, 2400);
+  }
+
+  // 이미지 복사 — 패들렛에 바로 붙여넣기
+  document.getElementById('copyimg').addEventListener('click', function(){
+    var btn = this;
+    function fail(){ flash(btn, '복사가 안 됩니다 — 그림 위에서 오른쪽 클릭'); }
+    if (!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write)){ fail(); return; }
+    try {
+      // 클릭 순간을 놓치지 않도록 Promise 형태로 넘긴다
+      var item = new ClipboardItem({
+        'image/png': new Promise(function(resolve){ cv.toBlob(resolve, 'image/png'); })
+      });
+      navigator.clipboard.write([item]).then(function(){
+        flash(btn, '복사됐습니다 — 패들렛에 붙여넣으세요');
+      }, fail);
+    } catch (e) { fail(); }
+  });
+
   // 저장
   document.getElementById('save').addEventListener('click', function(){
     var btn = this;
@@ -822,12 +877,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      var keep = btn.dataset.label || btn.textContent;
-      btn.dataset.label = keep;
-      btn.classList.add('done');
-      btn.textContent = '저장했습니다';
-      clearTimeout(btn._t);
-      btn._t = setTimeout(function(){ btn.classList.remove('done'); btn.textContent = keep; }, 2000);
+      flash(btn, '저장했습니다');
     } catch (e) {
       alert('저장이 안 됩니다. 명함 그림 위에서 마우스 오른쪽 버튼을 눌러 저장해 주세요.');
     }
