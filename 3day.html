@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>말로 만드는 나의 첫 앱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+
+<style>
+:root{
+  --ground:#ffffff;
+  --surface:#f6f8fb;
+  --surface-2:#eceff4;
+  --line:#dde1e8;
+  --ink:#141c28;
+  --ink-soft:#5c6675;
+  --accent:#1b3252;        /* 네이비 — 버튼·번호 */
+  --accent-deep:#0e1f38;
+  --accent-soft:#e5eaf2;
+  --mark-ink:#8a5206;      /* 앰버 — 바꿔야 할 곳에만 */
+  --mark-bg:#fdf1dd;
+  --mark-line:#e8c691;
+  --ok:#1a6b48;
+  --radius:14px;
+  --step:1;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161d;
+    --surface:#1a2029;
+    --surface-2:#222a35;
+    --line:#333d4b;
+    --ink:#e8ecf2;
+    --ink-soft:#a3aec0;
+    --accent:#3d6aa3;
+    --accent-deep:#5c8bc4;
+    --accent-soft:#232f42;
+    --mark-ink:#f2c684;
+    --mark-bg:#3a2c14;
+    --mark-line:#6b5124;
+    --ok:#5cbd91;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161d;
+  --surface:#1a2029;
+  --surface-2:#222a35;
+  --line:#333d4b;
+  --ink:#e8ecf2;
+  --ink-soft:#a3aec0;
+  --accent:#3d6aa3;
+  --accent-deep:#5c8bc4;
+  --accent-soft:#232f42;
+  --mark-ink:#f2c684;
+  --mark-bg:#3a2c14;
+  --mark-line:#6b5124;
+  --ok:#5cbd91;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Pretendard Variable","Pretendard","Nanum Gothic","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:calc(17px * var(--step));
+  line-height:1.75;
+  -webkit-text-size-adjust:100%;
+}
+
+.wrap{max-width:840px;margin:0 auto;padding:0 20px 80px}
+
+/* ── 머리말 ───────────────────────── */
+.masthead{padding:44px 0 26px;border-bottom:2px solid var(--line)}
+.eyebrow{
+  font-size:.82em;font-weight:700;letter-spacing:.14em;
+  color:var(--accent);margin:0 0 10px;
+}
+h1{
+  font-size:2.1em;font-weight:800;line-height:1.25;margin:0 0 12px;
+  text-wrap:balance;letter-spacing:-.01em;
+}
+.lede{margin:0;color:var(--ink-soft);font-size:1.02em}
+.lede strong{color:var(--ink)}
+
+/* ── 도구 막대 ─────────────────────── */
+.toolbar{
+  position:sticky;top:0;z-index:20;
+  background:var(--ground);
+  border-bottom:1px solid var(--line);
+  padding:10px 0;margin-bottom:8px;
+}
+.toolbar-inner{
+  max-width:840px;margin:0 auto;padding:0 20px;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.jump{
+  display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto;
+  overflow-x:auto;
+}
+.jump a{
+  flex:0 0 auto;
+  padding:7px 13px;border-radius:999px;
+  background:var(--surface);color:var(--ink-soft);
+  text-decoration:none;font-size:.86em;font-weight:700;
+  border:1px solid transparent;white-space:nowrap;
+}
+.jump a:hover,.jump a:focus-visible{background:var(--accent-soft);color:var(--accent-deep);border-color:var(--accent)}
+.sizer{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.sizer span{font-size:.82em;color:var(--ink-soft);font-weight:700}
+.sizer button{
+  width:38px;height:38px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);font-family:inherit;font-weight:800;cursor:pointer;
+  font-size:1em;line-height:1;
+}
+.sizer button:hover{background:var(--accent-soft);border-color:var(--accent)}
+
+/* ── 섹션 ─────────────────────────── */
+section{margin-top:52px;scroll-margin-top:76px}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-num{
+  font-family:"Nanum Gothic Coding",monospace;
+  font-size:1.5em;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+h2{font-size:1.5em;font-weight:800;margin:0;letter-spacing:-.01em}
+.sec-note{margin:0 0 22px;color:var(--ink-soft)}
+
+/* ── 카드 ─────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px 22px 20px;
+  margin-bottom:18px;
+}
+.card h3{
+  font-size:1.14em;font-weight:800;margin:0 0 8px;
+}
+.card p{margin:0 0 14px;color:var(--ink-soft)}
+.card p:last-of-type{margin-bottom:16px}
+.card strong{color:var(--ink)}
+
+pre{
+  margin:0 0 14px;
+  background:var(--ground);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:18px 18px;
+  font-family:"Nanum Gothic Coding","D2Coding",monospace;
+  font-size:.98em;line-height:1.85;
+  white-space:pre-wrap;word-break:break-word;
+  overflow-x:auto;
+}
+.ph{
+  color:var(--mark-ink);font-weight:700;
+  background:var(--mark-bg);
+  box-shadow:inset 0 0 0 1px var(--mark-line);
+  border-radius:4px;padding:1px 4px;
+}
+
+button.copy{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;min-height:58px;
+  border:none;border-radius:10px;
+  background:var(--accent);color:#fff;
+  font-family:inherit;font-size:1.05em;font-weight:800;
+  cursor:pointer;
+}
+button.copy:hover{background:var(--accent-deep)}
+button.copy:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
+button.copy.done{background:var(--ok)}
+button.copy .ico{font-family:"Nanum Gothic Coding",monospace;font-weight:700}
+
+/* 짧은 프롬프트 여러 개 */
+.chips{display:grid;gap:10px}
+@media(min-width:620px){.chips{grid-template-columns:1fr 1fr}}
+button.chip{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:56px;padding:12px 16px;
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--ground);color:var(--ink);
+  font-family:"Nanum Gothic Coding",monospace;
+  font-size:.96em;font-weight:700;text-align:left;cursor:pointer;
+}
+button.chip:hover{border-color:var(--accent);background:var(--accent-soft)}
+button.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.chip.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+button.chip .tag{font-family:inherit;font-size:.82em;font-weight:700;opacity:.65;flex:0 0 auto}
+
+/* 참고 상자 — 앰버는 '고칠 곳' 전용이라 여기선 중성 톤 */
+.note{
+  display:flex;gap:11px;
+  background:var(--surface-2);
+  border-radius:10px;padding:13px 15px;
+  font-size:.94em;color:var(--ink-soft);
+}
+.note b{flex:0 0 auto;font-weight:800;color:var(--accent-deep)}
+.note p{margin:0;color:inherit}
+
+/* 순서 목록 */
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.steps li{
+  counter-increment:s;
+  display:flex;gap:14px;align-items:flex-start;
+  padding:11px 0;border-bottom:1px solid var(--line);
+}
+ol.steps li:last-child{border-bottom:none}
+ol.steps li::before{
+  content:counter(s);
+  flex:0 0 auto;
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  font-family:"Nanum Gothic Coding",monospace;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9em;margin-top:2px;
+}
+ol.steps b{font-weight:800}
+ol.steps .en{font-family:"Nanum Gothic Coding",monospace;font-weight:700;color:var(--accent-deep)}
+
+/* 링크 배너 */
+.banner{
+  display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;
+  background:var(--surface-2);border-radius:var(--radius);
+  padding:16px 20px;margin-top:24px;
+}
+.banner .label{font-weight:800;font-size:.9em;color:var(--accent-deep)}
+.banner .addr{font-family:"Nanum Gothic Coding",monospace;font-weight:700;font-size:1.08em}
+
+footer{
+  margin-top:60px;padding-top:22px;border-top:1px solid var(--line);
+  color:var(--ink-soft);font-size:.9em;
+}
+@media (prefers-reduced-motion: no-preference){
+  button.copy,button.chip{transition:background .15s ease,border-color .15s ease}
+}
+
+/* ── 항목별 작은 복사 블록 ─────────── */
+.mini{margin-bottom:16px}
+.mini:last-of-type{margin-bottom:0}
+.mlabel{
+  display:block;font-weight:800;font-size:.9em;
+  color:var(--accent-deep);margin:0 0 6px;
+}
+button.copy.small{min-height:48px;font-size:.98em}
+
+/* ── 펼쳐보기 (힌트) ───────────────── */
+details.reveal{margin-top:9px}
+details.reveal summary{
+  cursor:pointer;font-weight:800;color:var(--accent-deep);
+  list-style:none;display:inline-flex;align-items:center;gap:6px;
+}
+details.reveal summary::-webkit-details-marker{display:none}
+details.reveal summary::after{content:'＋';font-weight:800}
+details.reveal[open] summary::after{content:'－'}
+details.reveal p{margin:9px 0 0}
+details.reveal summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* ── 펼쳐보기 (상세 프롬프트) ───────── */
+details.more{
+  margin-top:16px;background:var(--ground);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+}
+details.more summary{
+  padding:15px 18px;font-weight:800;cursor:pointer;
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:'＋';font-weight:800;color:var(--accent)}
+details.more[open] summary{border-bottom:1px solid var(--line)}
+details.more[open] summary::after{content:'－'}
+details.more summary:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.more-body{padding:16px 18px 18px}
+.more-body p{margin:0 0 12px;color:var(--ink-soft)}
+
+/* ── 링크 버튼 ─────────────────────── */
+.linkbtn{
+  display:flex;align-items:center;justify-content:center;
+  min-height:58px;border-radius:10px;margin:0 0 16px;
+  background:var(--accent);color:#fff;
+  font-weight:800;font-size:1.05em;text-decoration:none;
+}
+.linkbtn:hover{background:var(--accent-deep)}
+.linkbtn:focus-visible{outline:3px solid var(--accent-deep);outline-offset:3px}
+
+/* ── 되묻는 한 줄 ─────────────────── */
+.note p.ask{
+  margin-top:10px;
+  font-size:1.1em;font-weight:800;
+  color:var(--accent-deep);
+  line-height:1.5;
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <nav class="jump" aria-label="바로가기">
+      <a href="#s1">1 스토리북</a>
+      <a href="#s2">2 디지털 명함</a>
+      <a href="#s3">3 앱 만들기</a>
+      <a href="#s4">4 말로 고치기</a>
+      <a href="#s5">5 나만의 앱</a>
+    </nav>
+    <div class="sizer">
+      <span>글자</span>
+      <button type="button" id="smaller" aria-label="글자 작게">－</button>
+      <button type="button" id="bigger" aria-label="글자 크게">＋</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">2026 인공지능 업스킬링 · 3회차</p>
+    <h1>말로 만드는 나의 첫 앱</h1>
+    <p class="lede">오늘 쓸 문장이 순서대로 담겨 있습니다. <strong>복사 버튼을 누르면 복사</strong>되니, 붙여넣기(<strong>Ctrl</strong> 누른 채 <strong>V</strong>)만 하시면 됩니다. 노란색으로 표시된 <span class="ph">[대괄호]</span> 부분만 내 이야기로 바꾸세요.</p>
+  </header>
+
+  <!-- ───────── 1 ───────── -->
+  <section id="s1">
+    <div class="sec-head"><span class="sec-num">1</span><h2>구글이 만든 Gem — 스토리북</h2></div>
+    <p class="sec-note">한 줄만 말하면 <strong>그림 동화책 한 권</strong>을 만들어 줍니다. 지난주에 만든 내 Gem과 같은 곳에 있습니다.</p>
+
+    <div class="card">
+      <h3>스토리북 들어가기</h3>
+      <ol class="steps">
+        <li><span>제미나이 왼쪽 위 <b>≡</b> 메뉴를 엽니다</span></li>
+        <li><span><b>Gem</b> 을 누릅니다</span></li>
+        <li><span><b>Google 사전 제작</b> 줄에서 <span class="en">Storybook</span> 을 누릅니다</span></li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>① 동화책 만들기</h3>
+      <pre data-copy>[보름달 아래에서 소원을 비는 토끼] 이야기를
+동화책으로 만들어줘.
+
+[따뜻한 수채화] 그림으로,
+누구나 읽기 쉬운 짧은 문장으로.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>참고</b><p>만드는 데 <strong>1~2분쯤</strong> 걸립니다. 기다리는 동안 다음에 만들 이야기를 떠올려 보세요.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>② 더 말하면 더 좋아집니다</h3>
+      <p>한 줄로도 되지만, <strong>주인공 · 배경 · 줄거리 · 분위기</strong>를 더 말하면 원하는 책에 가까워집니다.</p>
+      <pre data-copy>[추석 밤 시골 마을]을 배경으로
+[용감하지만 겁이 많은 토끼]가 주인공인 동화책을 만들어줘.
+
+줄거리: [보름달에게 소원을 빌러 뒷산에 오르는 이야기]
+분위기: [잔잔하고 따뜻하게]
+그림: [색연필] 스타일로</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+
+      <span class="mlabel" style="margin-top:6px">그림 스타일 — <span class="ph">[색연필]</span> 자리에 넣어보세요</span>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="수채화">수채화<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="색연필">색연필<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="파스텔톤">파스텔톤<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="클레이">클레이 (점토 인형)<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="종이 콜라주">종이 콜라주<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="빈티지 동화책">빈티지 동화책<span class="tag">복사</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>③ 내 이야기로 만들기</h3>
+      <p>이야기가 안 떠오르면 <strong>휴대폰 사진첩</strong>을 넘겨보세요. 좋아하는 음식, 다녀온 여행, 가족·친한 친구, 특별한 기억, 나의 꿈.</p>
+      <p><strong>1주차에 만든 내 캐릭터 그림</strong>을 올리고(<b>＋</b> → 파일 업로드) 이렇게 말하면 내가 주인공이 됩니다.</p>
+      <pre data-copy>이 그림 속 인물이 주인공인 동화책을 만들어줘.
+[주인공이 하는 일]</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+    </div>
+
+    <div class="card">
+      <h3>완성된 그림책으로 할 수 있는 것</h3>
+      <ol class="steps">
+        <li><span><b>듣기</b> — 높은 음성 · 낮은 음성 중에 골라 들어요 (이어폰 있으신 분)</span></li>
+        <li><span><b>공유</b> — 링크를 만들어 패들렛에 올려요</span></li>
+        <li><span><b>인쇄 → PDF</b> — 파일로 저장해 두고 인쇄할 수 있어요</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ───────── 2 ───────── -->
+  <section id="s2">
+    <div class="sec-head"><span class="sec-num">2</span><h2>디지털 명함 완성하기</h2></div>
+    <p class="sec-note">지난주 그림과 노래로 나만의 명함을 만듭니다. AI로 그리지 않고 <strong>명함 페이지</strong>가 만들어 줍니다.</p>
+
+    <div class="card">
+      <h3>만드는 순서</h3>
+      <a class="linkbtn" href="https://euniya2.github.io/uos_edu/namecard.html" target="_blank" rel="noopener">명함 만들기</a>
+      <ol class="steps">
+        <li><span>패들렛에서 <b>내 캐릭터 그림을 내려받습니다</b> (그림 위 오른쪽 클릭 → 저장)</span></li>
+        <li><span>위 단추를 눌러 <b>명함 만들기</b> 페이지를 엽니다</span></li>
+        <li><span>그림을 올리고 이름을 적습니다 — 얼굴이 잘리면 <b>끌어서 옮기고 크기를 키우세요</b></span></li>
+        <li><span><b>노래 주소</b>를 넣으면 QR이 들어갑니다</span></li>
+        <li><span><b>이미지 복사하기</b> 를 눌러 패들렛에 붙여넣습니다</span></li>
+      </ol>
+      <div class="note"><b>참고</b><p>연락처 · 이메일 · 남기고 싶은 말은 <strong>넣고 싶은 것만</strong> 적으시면 됩니다. 비워두셔도 됩니다.</p></div>
+    </div>
+  </section>
+
+  <!-- ───────── 3 ───────── -->
+  <section id="s3">
+    <div class="sec-head"><span class="sec-num">3</span><h2>말로 나만의 앱 만들기</h2></div>
+    <p class="sec-note">코딩을 몰라도, <strong>말로 설명하면</strong> AI가 앱을 만들어 줍니다. 이것을 <strong>바이브코딩</strong>이라고 합니다.</p>
+
+    <div class="card">
+      <h3>Canvas 켜기</h3>
+      <ol class="steps">
+        <li><span>제미나이에서 <b>새 채팅</b>을 엽니다</span></li>
+        <li><span>입력창 아래 <b>도구</b>를 누릅니다</span></li>
+        <li><span><span class="en">Canvas</span> 를 누릅니다</span></li>
+      </ol>
+      <div class="note" style="margin-top:14px"><b>꼭 기억</b><p><strong>새 채팅을 열 때마다 Canvas를 다시 켜야 합니다.</strong> 안 켜면 앱 대신 글만 나옵니다.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>A — 한 줄로 만들어보기</h3>
+      <p>일부러 짧게 말해봅니다. 어떤 앱이 나오는지 먼저 보겠습니다.</p>
+      <pre data-copy>오늘 뭐 먹을지 골라주는 앱 만들어줘.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+    </div>
+
+    <div class="card">
+      <h3>앱을 설명하는 틀</h3>
+      <ol class="steps">
+        <li><span><b>무엇을 만들까</b> — 어떤 앱인지</span></li>
+        <li><span><b>누르면 어떻게</b> — 단추를 누르면 무슨 일이 일어나는지</span></li>
+        <li><span><b>내용</b> — 앱에 들어갈 목록</span></li>
+        <li><span><b>어떤 모양으로</b> — 색 · 글씨 · 분위기</span></li>
+      </ol>
+      <div class="note" style="margin-top:14px"><b>1주차와 같습니다</b><p>정확히 말할수록 <strong>내 것</strong>이 됩니다.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>B — 틀대로 만들어보기</h3>
+      <p><strong>새 채팅</strong>을 열고 <strong>Canvas를 다시 켠 뒤</strong> 붙여넣으세요. 같은 채팅에 넣으면 A를 고쳐버립니다.</p>
+      <pre data-copy>① 무엇을 만들까
+오늘 뭐 먹을지 고민될 때 메뉴를 골라주는 '오늘 뭐 먹지' 앱을 만들어줘.
+
+② 누르면 어떻게
+- '오늘 뭐 먹지?' 단추를 누르면 메뉴 이름이 빠르게 돌다가 하나에서 멈추게 해줘.
+- 뽑힌 메뉴는 화면 가운데에 크게 보여줘.
+- '다시 고르기' 단추도 넣어줘.
+
+③ 메뉴
+[김치찌개, 된장찌개, 비빔밥, 칼국수, 짜장면, 초밥, 삼겹살, 냉면]
+
+④ 어떤 모양으로
+- 글씨와 단추는 크고 누르기 쉽게
+- [따뜻한 밥상] 느낌의 색으로
+- 한 화면에 다 보이게</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>나란히 보기</b>
+        <div>
+          <p>A와 B를 나란히 놓고 — <strong>어느 쪽이 쓰기 편한가요?</strong></p>
+          <p class="ask">말하지 않으면 AI 마음대로, 말하면 내 마음대로.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 4 ───────── -->
+  <section id="s4">
+    <div class="sec-head"><span class="sec-num">4</span><h2>말로 고치기</h2></div>
+    <p class="sec-note">B 채팅에서 이어서 넣습니다. <strong>한 번에 하나씩</strong>.</p>
+    <div class="card">
+      <div class="note" style="margin-bottom:18px"><b>먼저 보세요</b><p>AI가 알아서 넣어준 기능도 있습니다. <strong>이미 되어 있는 것은 그대로 두시고</strong>, 더하고 싶은 기능이나 바꾸고 싶은 모양만 말하시면 됩니다.</p></div>
+      <span class="mlabel">기능 더하기</span>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="뽑힌 메뉴 아래에 '근처 식당 찾기' 단추를 넣어줘. 누르면 네이버 지도에서 그 메뉴를 검색하게 해줘.">근처 식당 찾기 단추<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="뽑힌 메뉴 아래에 '만드는 법 보기' 단추를 넣어줘. 누르면 유튜브에서 그 요리 만드는 법을 검색하게 해줘.">만드는 법 보기 단추<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="'비 오는 날' 단추를 넣어줘. 누르면 비 오는 날 어울리는 메뉴 중에서만 골라줘.">비 오는 날 메뉴 단추<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="뽑힌 메뉴를 화면 아래에 날짜와 함께 기록해줘. 최근 것이 맨 위에 오게 해줘.">먹은 메뉴 기록하기<span class="tag">복사</span></button>
+      </div>
+      <span class="mlabel" style="margin-top:16px">모양 바꾸기</span>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="옛날 식당 차림표처럼 보이게 바꿔줘.">옛날 식당 차림표처럼<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="메뉴를 돌림판 모양으로 바꿔줘. 글자는 크게, 겹치지 않게.">돌림판 모양으로<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="밤거리 포장마차 느낌으로 바꿔줘.">포장마차 느낌으로<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="제목 글씨를 붓글씨 느낌으로 바꿔줘.">제목을 붓글씨로<span class="tag">복사</span></button>
+      </div>
+      <span class="mlabel" style="margin-top:16px">움직임</span>
+      <div class="chips">
+        <button class="chip" type="button" data-copy="메뉴가 뽑히면 꽃가루가 터지는 축하 효과를 넣어줘.">뽑히면 꽃가루 터지게<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="메뉴가 돌 때 슬롯머신처럼 위에서 아래로 굴러가게 해줘.">슬롯머신처럼 굴러가게<span class="tag">복사</span></button>
+        <button class="chip" type="button" data-copy="뽑힌 메뉴가 통통 튀면서 나타나게 해줘.">통통 튀면서 나타나게<span class="tag">복사</span></button>
+      </div>
+      <div class="note" style="margin-top:14px"><b>이것도 됩니다</b><p>내 앱을 써보고 <strong>불편한 점을 그대로</strong> 말하세요. "단추가 너무 작아", "뭘 눌러야 할지 모르겠어" — 그게 곧 고치는 말입니다.</p></div>
+      <div class="note" style="margin-top:10px"><b>되돌리기</b><p>마음에 안 들면 Canvas 위쪽 <strong>↶ 단추</strong>로 이전 모습으로 돌아갑니다.</p></div>
+    </div>
+  </section>
+
+  <!-- ───────── 5 ───────── -->
+  <section id="s5">
+    <div class="sec-head"><span class="sec-num">5</span><h2>나만의 앱 만들기</h2></div>
+    <p class="sec-note">같은 틀에 <strong>내 앱</strong>을 채웁니다. 새 채팅 + Canvas.</p>
+
+    <div class="card">
+      <h3>틀 — 대괄호만 채우세요</h3>
+      <pre data-copy>① 무엇을 만들까
+[어떤 앱인지] 앱을 만들어줘.
+
+② 누르면 어떻게
+- [어떤 단추]를 누르면 [무슨 일이 일어나는지]
+
+③ 내용
+[앱에 들어갈 목록]
+
+④ 어떤 모양으로
+- 글씨와 단추는 크고 누르기 쉽게
+- [어떤] 느낌의 색으로
+- 한 화면에 다 보이게</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+
+      <p style="margin-top:16px">채우기 어려우면 <strong>한 마디만</strong> 하세요. AI가 먼저 묻습니다.</p>
+      <pre data-copy>[만들고 싶은 앱]을 만들고 싶어.
+만들기 전에 나에게 필요한 것을 세 가지만 물어봐.</pre>
+      <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+      <div class="note"><b>2주차에 배운 것</b><p>Gem에 넣었던 <strong>"먼저 물어봐"</strong> 입니다. 대답만 하시면 필요한 것이 다 들어갑니다.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>이런 앱은 어떠세요 — 펼쳐서 그대로 써도 됩니다</h3>
+
+      <details class="more">
+        <summary>윷 던지기 (추석)</summary>
+        <div class="more-body">
+          <pre data-copy>① 무엇을 만들까
+추석에 가족과 함께 하는 '윷 던지기' 앱을 만들어줘.
+
+② 누르면 어떻게
+- '윷 던지기' 단추를 누르면 윷가락 네 개가 굴러가다 멈추게 해줘.
+- 윷가락 네 개가 각각 앞이나 뒤로 떨어지고, 그에 맞게 도·개·걸·윷·모를 정해줘.
+- 나온 결과를 화면 가운데에 크게 보여줘.
+- 윷이나 모가 나오면 "한 번 더!" 라고 축하해줘.
+
+④ 어떤 모양으로
+- 글씨와 단추는 크고 누르기 쉽게
+- [전통 한지] 느낌의 색으로
+- 한 화면에 다 보이게</pre>
+          <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+        </div>
+      </details>
+
+      <details class="more">
+        <summary>약 먹었나 체크판</summary>
+        <div class="more-body">
+          <pre data-copy>① 무엇을 만들까
+오늘 약을 먹었는지 표시하는 '약 먹었나' 앱을 만들어줘.
+
+② 누르면 어떻게
+- [아침, 점심, 저녁] 칸을 누르면 '먹었어요' 표시가 되게 해줘.
+- 다시 누르면 표시가 지워지게 해줘.
+- 세 칸을 다 누르면 "오늘도 잘 챙기셨어요!" 라고 칭찬해줘.
+- 맨 위에 오늘 날짜를 크게 보여줘.
+
+④ 어떤 모양으로
+- 글씨와 단추는 크고 누르기 쉽게
+- [차분한 초록색] 느낌으로
+- 한 화면에 다 보이게</pre>
+          <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+        </div>
+      </details>
+
+      <details class="more">
+        <summary>모임 회비 나누기</summary>
+        <div class="more-body">
+          <pre data-copy>① 무엇을 만들까
+모임에서 쓴 돈을 나누는 '회비 나누기' 앱을 만들어줘.
+
+② 누르면 어떻게
+- 쓴 돈과 사람 수를 적는 칸을 만들어줘.
+- '나누기' 단추를 누르면 한 사람당 얼마인지 크게 보여줘.
+- 백 원 아래는 올려서 보여주고, 그래서 남는 돈도 알려줘.
+
+④ 어떤 모양으로
+- 글씨와 단추는 크고 누르기 쉽게
+- 숫자 칸은 크게
+- [깔끔한 파란색] 느낌으로</pre>
+          <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+        </div>
+      </details>
+
+      <details class="more">
+        <summary>추석 퀴즈</summary>
+        <div class="more-body">
+          <pre data-copy>① 무엇을 만들까
+가족과 함께 푸는 '추석 퀴즈' 앱을 만들어줘.
+
+② 누르면 어떻게
+- 문제를 하나씩 보여주고, 보기 네 개 중 하나를 누르게 해줘.
+- 맞히면 축하 효과를 보여주고, 틀리면 정답을 알려줘.
+- 다 풀면 몇 개 맞혔는지 보여줘.
+
+③ 내용
+문제는 [추석에 관한 쉬운 상식] 다섯 개로 만들어줘.
+
+④ 어떤 모양으로
+- 글씨와 단추는 크고 누르기 쉽게
+- [보름달처럼 따뜻한 노란색] 느낌으로</pre>
+          <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+        </div>
+      </details>
+
+      <details class="more">
+        <summary>오늘의 한마디</summary>
+        <div class="more-body">
+          <pre data-copy>① 무엇을 만들까
+누를 때마다 좋은 글귀를 보여주는 '오늘의 한마디' 앱을 만들어줘.
+
+② 누르면 어떻게
+- '오늘의 한마디' 단추를 누르면 따뜻한 글귀 하나가 천천히 나타나게 해줘.
+- 다시 누르면 다른 글귀가 나오게 해줘.
+
+③ 내용
+글귀는 네가 스무 개 준비해줘. 누가 한 말인지는 적지 마.
+
+④ 어떤 모양으로
+- 글씨는 크고 읽기 쉽게
+- [새벽 하늘처럼 은은한] 색으로</pre>
+          <button class="copy" type="button"><span class="ico">⧉</span>복사하기</button>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>만든 앱을 패들렛에 올리기</h3>
+      <ol class="steps">
+        <li><span><b>Win + Shift + S</b> 를 누릅니다</span></li>
+        <li><span>앱 화면을 네모로 끌어 고릅니다</span></li>
+        <li><span>패들렛에 <b>Ctrl + V</b> 로 붙여넣습니다</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="banner">
+    <span class="label">결과물 올리는 곳</span>
+    <span class="addr">bit.ly/업스킬링</span>
+  </div>
+
+  <footer>
+    <p><b>마치기 전에 꼭</b> — 패들렛에 오늘 결과물(그림책 · 명함 · 앱 화면)을 올리셨는지 확인하시고, <b>구글</b> 오른쪽 위 내 사진 → <b>로그아웃</b> 해주세요. 공용 컴퓨터라 안 하시면 다음 사람이 내 계정을 볼 수 있습니다.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  // 대괄호 강조 — 원문은 그대로 두고 화면에만 표시
+  document.querySelectorAll('pre[data-copy]').forEach(function(pre){
+    var raw = pre.textContent;
+    pre.setAttribute('data-copy', raw);
+    var html = raw
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\[[^\]]*\]/g, function(m){ return '<span class="ph">' + m + '</span>'; });
+    pre.innerHTML = html;
+  });
+
+  function copyText(text){
+    // 클릭 직후 동기적으로 먼저 시도해야 브라우저가 막지 않는다
+    if (legacy(text)) return Promise.resolve(true);
+    if (navigator.clipboard){
+      return navigator.clipboard.writeText(text).then(function(){ return true; },
+                                                      function(){ return false; });
+    }
+    return Promise.resolve(false);
+  }
+  function legacy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly','');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function flash(btn, label){
+    var original = btn.dataset.label || btn.innerHTML;
+    btn.dataset.label = original;
+    btn.classList.add('done');
+    btn.innerHTML = label;
+    clearTimeout(btn._t);
+    btn._t = setTimeout(function(){
+      btn.classList.remove('done');
+      btn.innerHTML = btn.dataset.label;
+    }, 1800);
+  }
+
+  document.querySelectorAll('button.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pre = btn.parentElement.querySelector('pre[data-copy]');
+      if (!pre) return;
+      copyText(pre.getAttribute('data-copy')).then(function(ok){
+        flash(btn, ok ? '복사됐습니다' : '복사가 안 됩니다 — 손을 들어주세요');
+      });
+    });
+  });
+
+  document.querySelectorAll('button.chip').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      copyText(btn.getAttribute('data-copy')).then(function(ok){
+        flash(btn, ok ? '복사됐습니다' : '복사가 안 됩니다');
+      });
+    });
+  });
+
+  // 글자 크기
+  var STEPS = [1, 1.15, 1.32, 1.5];
+  var idx = 0;
+  try {
+    var saved = localStorage.getItem('uskill-size');
+    if (saved !== null) idx = Math.min(STEPS.length - 1, Math.max(0, parseInt(saved, 10) || 0));
+  } catch(e){}
+  function apply(){
+    document.documentElement.style.setProperty('--step', STEPS[idx]);
+    try { localStorage.setItem('uskill-size', String(idx)); } catch(e){}
+  }
+  apply();
+  document.getElementById('bigger').addEventListener('click', function(){
+    if (idx < STEPS.length - 1){ idx++; apply(); }
+  });
+  document.getElementById('smaller').addEventListener('click', function(){
+    if (idx > 0){ idx--; apply(); }
+  });
+})();
+</script>
+</body>
+</html>
